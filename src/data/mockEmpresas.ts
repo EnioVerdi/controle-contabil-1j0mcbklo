@@ -10,6 +10,8 @@ export const mockEmpresas: Empresa[] = [
     fechamento: '30/09',
     fiscal: 'Regular',
     ultimaVerificacao: '02/10/2023',
+    regimeTributario: 'Lucro Presumido',
+    depreciacao: true,
   },
   {
     id: '002',
@@ -20,6 +22,8 @@ export const mockEmpresas: Empresa[] = [
     fechamento: '15/10',
     fiscal: 'Pendente',
     ultimaVerificacao: '01/10/2023',
+    regimeTributario: 'Simples Nacional',
+    extratos: true,
   },
   {
     id: '003',
@@ -30,6 +34,7 @@ export const mockEmpresas: Empresa[] = [
     fechamento: '20/10',
     fiscal: 'Regular',
     ultimaVerificacao: '03/10/2023',
+    regimeTributario: 'Lucro Real',
   },
   {
     id: '004',
@@ -50,5 +55,6 @@ export const mockEmpresas: Empresa[] = [
     fechamento: '05/11',
     fiscal: 'Pendente',
     ultimaVerificacao: '04/10/2023',
+    observacoes: 'Atenção especial ao prazo de fechamento neste trimestre.',
   },
 ]

@@ -7,4 +7,15 @@ export interface Empresa {
   fechamento: string
   fiscal: 'Regular' | 'Pendente'
   ultimaVerificacao: string
+
+  regimeTributario?: string
+  novoResponsavel?: string
+  regimeFolha?: string
+  contabilizacaoFolha?: string
+  depreciacao?: boolean
+  extratos?: boolean
+  parcelamentos?: boolean
+  distribuicaoLucro?: boolean
+  periodoVerificado?: string
+  observacoes?: string
 }
