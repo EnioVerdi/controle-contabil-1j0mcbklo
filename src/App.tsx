@@ -7,6 +7,7 @@ import { SearchProvider } from '@/context/SearchContext'
 import Layout from './components/Layout'
 import Index from './pages/Index'
 import Dashboard from './pages/Dashboard'
+import EmpresaDetails from './pages/EmpresaDetails'
 import Estatisticas from './pages/Estatisticas'
 import Analytics from './pages/Analytics'
 import Pagamentos from './pages/Pagamentos'
@@ -24,6 +25,7 @@ const App = () => (
           <Route element={<Layout />}>
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/empresas/:id" element={<EmpresaDetails />} />
             <Route path="/estatisticas" element={<Estatisticas />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/pagamentos" element={<Pagamentos />} />

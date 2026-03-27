@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { Empresa } from '@/types/empresa'
 import { ArrowUpDown, Building2, Eye, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -20,6 +21,8 @@ interface EmpresasListProps {
 }
 
 export function EmpresasList({ data, onSort, onView, onEdit, onDelete }: EmpresasListProps) {
+  const navigate = useNavigate()
+
   return (
     <div className="card-container overflow-hidden p-0 animate-fade-in-up">
       <div className="overflow-x-auto">
@@ -97,8 +100,12 @@ export function EmpresasList({ data, onSort, onView, onEdit, onDelete }: Empresa
                       <Button
                         variant="ghost"
                         size="icon"
+                        title="Ver Detalhes"
                         className="h-8 w-8 rounded-lg hover:bg-blue-50 hover:text-blue-600"
-                        onClick={() => onView(empresa)}
+                        onClick={() => {
+                          onView(empresa)
+                          navigate(`/empresas/${empresa.id}`)
+                        }}
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
