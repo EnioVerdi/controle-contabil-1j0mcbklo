@@ -18,13 +18,13 @@ import {
 } from '@/components/ui/select'
 
 const data = [
-  { day: 'Sun', value: 110, label: '10%', type: 'revenue', isLoss: false },
-  { day: 'Mon', value: 140, label: '', type: 'striped-blue', isLoss: false },
-  { day: 'Tue', value: 95, label: '5%', type: 'revenue', isLoss: false },
-  { day: 'Wed', value: 130, label: '-5%', type: 'striped-gray', isLoss: true },
-  { day: 'Thu', value: 105, label: '10%', type: 'revenue', isLoss: false },
-  { day: 'Fri', value: 155, label: '20%', type: 'revenue', isLoss: false },
-  { day: 'Sat', value: 70, label: '-3%', type: 'revenue', isLoss: true },
+  { day: 'Dom', value: 110, label: '10%', type: 'revenue', isLoss: false },
+  { day: 'Seg', value: 140, label: '', type: 'striped-blue', isLoss: false },
+  { day: 'Ter', value: 95, label: '5%', type: 'revenue', isLoss: false },
+  { day: 'Qua', value: 130, label: '-5%', type: 'striped-gray', isLoss: true },
+  { day: 'Qui', value: 105, label: '10%', type: 'revenue', isLoss: false },
+  { day: 'Sex', value: 155, label: '20%', type: 'revenue', isLoss: false },
+  { day: 'Sáb', value: 70, label: '-3%', type: 'revenue', isLoss: true },
 ]
 
 const CustomLabel = (props: any) => {
@@ -56,7 +56,7 @@ const CustomLabel = (props: any) => {
 }
 
 export function PerformanceSummary() {
-  const [period, setPeriod] = useState('Weekly')
+  const [period, setPeriod] = useState('Semanal')
 
   return (
     <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_20px_rgba(0,0,0,0.02)] h-full flex flex-col">
@@ -87,32 +87,32 @@ export function PerformanceSummary() {
       </svg>
 
       <div className="flex justify-between items-center mb-8">
-        <h3 className="font-bold text-gray-900 text-lg">Performance Summary</h3>
+        <h3 className="font-bold text-gray-900 text-lg">Resumo de Desempenho</h3>
 
         <div className="flex items-center gap-6">
           <div className="hidden sm:flex items-center gap-4 text-xs font-medium text-gray-500">
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-sm bg-blue-500"></div>Revenue
+              <div className="w-2.5 h-2.5 rounded-sm bg-blue-500"></div>Renda
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-sm bg-gray-200"></div>Expenses
+              <div className="w-2.5 h-2.5 rounded-sm bg-gray-200"></div>Despesas
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-8 h-4 rounded-full border border-green-300 flex items-center justify-center text-[8px] text-green-500 font-bold bg-white">
-                Profit
+                Lucro
               </div>
-              <span className="text-red-400">/ Loss</span>
+              <span className="text-red-400">/ Prejuízo</span>
             </div>
           </div>
 
           <Select value={period} onValueChange={setPeriod}>
             <SelectTrigger className="w-[110px] h-9 text-xs rounded-xl border-gray-100 bg-gray-50">
-              <SelectValue placeholder="Period" />
+              <SelectValue placeholder="Período" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Weekly">Weekly</SelectItem>
-              <SelectItem value="Monthly">Monthly</SelectItem>
-              <SelectItem value="Yearly">Yearly</SelectItem>
+              <SelectItem value="Semanal">Semanal</SelectItem>
+              <SelectItem value="Mensal">Mensal</SelectItem>
+              <SelectItem value="Anual">Anual</SelectItem>
             </SelectContent>
           </Select>
         </div>

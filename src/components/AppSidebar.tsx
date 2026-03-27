@@ -24,16 +24,16 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
 const navItems = [
-  { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-  { name: 'Performance', path: '/dashboard', icon: Presentation },
-  { name: 'Statistics', path: '/estatisticas', icon: BarChart3 },
-  { name: 'Analytics', path: '/analytics', icon: LineChart },
-  { name: 'Payments', path: '/pagamentos', icon: CreditCard, badge: '3' },
+  { name: 'Empresas', path: '/', icon: LayoutDashboard },
+  { name: 'Painel', path: '/dashboard', icon: Presentation },
+  { name: 'Estatísticas', path: '/estatisticas', icon: BarChart3 },
+  { name: 'Análises', path: '/analytics', icon: LineChart },
+  { name: 'Pagamentos', path: '/pagamentos', icon: CreditCard, badge: '3' },
 ]
 
 const supportItems = [
-  { name: 'Help', path: '/ajuda', icon: HelpCircle },
-  { name: 'Settings', path: '/configuracoes', icon: Settings },
+  { name: 'Ajuda', path: '/ajuda', icon: HelpCircle },
+  { name: 'Configurações', path: '/configuracoes', icon: Settings },
 ]
 
 export function AppSidebar() {
@@ -99,7 +99,7 @@ export function AppSidebar() {
 
         <SidebarGroup className="mt-8">
           <div className="mb-3 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-            Support
+            Suporte
           </div>
           <SidebarMenu className="gap-1.5">
             {supportItems.map((item) => (
@@ -127,10 +127,10 @@ export function AppSidebar() {
               <Activity className="h-5 w-5 fill-current" />
             </div>
             <p className="mb-5 text-[15px] pr-4 font-bold leading-snug text-gray-900 tracking-tight">
-              Build future wealth with smart financial steps today.
+              Construa riqueza futura com passos financeiros inteligentes hoje.
             </p>
             <Button className="w-fit rounded-full bg-gray-900 hover:bg-black text-white px-6 h-9 text-xs font-bold shadow-lg shadow-gray-900/20">
-              Start Now
+              Começar Agora
             </Button>
           </div>
           {/* Decorative Money Bag Emoji to match visual style */}
@@ -144,7 +144,7 @@ export function AppSidebar() {
           className="w-full justify-start gap-3.5 rounded-2xl h-12 px-4 text-red-500 hover:text-red-600 hover:bg-red-50 group mt-2"
         >
           <LogOut className="h-5 w-5 group-hover:scale-105 transition-transform" />
-          <span className="font-bold text-sm">Logout</span>
+          <span className="font-bold text-sm">Sair</span>
         </Button>
       </SidebarFooter>
     </Sidebar>

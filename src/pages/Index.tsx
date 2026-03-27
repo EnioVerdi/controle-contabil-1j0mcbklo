@@ -162,7 +162,7 @@ export default function Index() {
           </Select>
 
           <Button onClick={() => setIsCreateOpen(true)} className="rounded-xl h-10 gap-2">
-            <Plus className="h-4 w-4" /> Nova Empresa
+            <Plus className="h-4 w-4" /> Adicionar Empresa
           </Button>
         </div>
       </div>
@@ -220,7 +220,7 @@ export default function Index() {
                   <Label className="text-xs text-muted-foreground mb-1 block">Status Fiscal</Label>
                   <Badge
                     variant="outline"
-                    className={viewData.fiscal === 'Regular' ? 'badge-success' : 'badge-warning'}
+                    className={viewData.fiscal === 'Verificada' ? 'badge-success' : 'badge-warning'}
                   >
                     {viewData.fiscal}
                   </Badge>
@@ -249,7 +249,7 @@ export default function Index() {
       >
         <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
-            <DialogTitle>{editData ? 'Editar Empresa' : 'Nova Empresa'}</DialogTitle>
+            <DialogTitle>{editData ? 'Editar Empresa' : 'Adicionar Empresa'}</DialogTitle>
             <DialogDescription>
               {editData
                 ? `Atualize as informações de ${editData.nome}.`

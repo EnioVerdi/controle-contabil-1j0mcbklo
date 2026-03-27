@@ -32,7 +32,7 @@ export function EmpresaDetailsCards({ empresa, onTransfer }: Props) {
       <Card className="shadow-sm border-slate-200">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-blue-500" /> Dados Básicos
+            <Building2 className="w-4 h-4 text-blue-500" /> Informações Básicas
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
@@ -68,7 +68,7 @@ export function EmpresaDetailsCards({ empresa, onTransfer }: Props) {
             className="h-8 text-xs px-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50"
             onClick={onTransfer}
           >
-            <UserPlus className="w-3 h-3 mr-1" /> Transferir
+            <UserPlus className="w-3 h-3 mr-1" /> Transferir Responsável
           </Button>
         </CardHeader>
         <CardContent className="space-y-4 text-sm pt-1">
@@ -88,7 +88,7 @@ export function EmpresaDetailsCards({ empresa, onTransfer }: Props) {
       <Card className="shadow-sm border-slate-200">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-500" /> Dados Fiscais
+            <ShieldCheck className="w-4 h-4 text-emerald-500" /> Detalhes Fiscais
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
@@ -120,7 +120,7 @@ export function EmpresaDetailsCards({ empresa, onTransfer }: Props) {
       <Card className="shadow-sm border-slate-200">
         <CardHeader className="pb-3">
           <CardTitle className="text-base font-semibold flex items-center gap-2">
-            <Clock className="w-4 h-4 text-amber-500" /> Contábeis
+            <Clock className="w-4 h-4 text-amber-500" /> Informações Contábeis
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">

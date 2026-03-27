@@ -17,7 +17,7 @@ export function KpiCard({
   value,
   target,
   trend,
-  trendLabel = 'From last week',
+  trendLabel = 'Da semana passada',
   progress,
   colorClass,
   progressColorClass,

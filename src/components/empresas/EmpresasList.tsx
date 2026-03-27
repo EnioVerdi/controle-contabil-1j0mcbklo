@@ -31,11 +31,11 @@ export function EmpresasList({ data, onSort, onView, onEdit, onDelete }: Empresa
             <TableRow className="hover:bg-transparent">
               {[
                 { key: 'id', label: 'Código' },
-                { key: 'nome', label: 'Nome' },
+                { key: 'nome', label: 'Nome da Empresa' },
                 { key: 'responsavel', label: 'Responsável' },
                 { key: 'atividade', label: 'Atividade' },
                 { key: 'fechamento', label: 'Fechamento' },
-                { key: 'fiscal', label: 'Fiscal' },
+                { key: 'fiscal', label: 'Status' },
                 { key: 'ultimaVerificacao', label: 'Última Verificação' },
               ].map((col) => (
                 <TableHead
@@ -87,7 +87,9 @@ export function EmpresasList({ data, onSort, onView, onEdit, onDelete }: Empresa
                   <TableCell>
                     <Badge
                       variant="outline"
-                      className={empresa.fiscal === 'Regular' ? 'badge-success' : 'badge-warning'}
+                      className={
+                        empresa.fiscal === 'Verificada' ? 'badge-success' : 'badge-warning'
+                      }
                     >
                       {empresa.fiscal}
                     </Badge>
@@ -112,6 +114,7 @@ export function EmpresasList({ data, onSort, onView, onEdit, onDelete }: Empresa
                       <Button
                         variant="ghost"
                         size="icon"
+                        title="Editar"
                         className="h-8 w-8 rounded-lg hover:bg-slate-100"
                         onClick={() => onEdit(empresa)}
                       >
@@ -120,6 +123,7 @@ export function EmpresasList({ data, onSort, onView, onEdit, onDelete }: Empresa
                       <Button
                         variant="ghost"
                         size="icon"
+                        title="Excluir"
                         className="h-8 w-8 rounded-lg hover:bg-red-50 hover:text-red-600"
                         onClick={() => onDelete(empresa)}
                       >

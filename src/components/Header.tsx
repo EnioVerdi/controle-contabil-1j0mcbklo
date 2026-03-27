@@ -15,7 +15,7 @@ export function Header() {
         <div className="relative w-full max-w-[320px]">
           <Search className="absolute left-4 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Search..."
+            placeholder="Buscar..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full rounded-full bg-white pl-11 pr-4 h-12 border-none shadow-[0_2px_15px_rgba(0,0,0,0.02)] text-sm font-medium placeholder:text-gray-400 focus-visible:ring-1 focus-visible:ring-gray-200"
@@ -44,7 +44,7 @@ export function Header() {
           <span className="text-sm font-bold text-gray-900 leading-none tracking-tight">
             John Andre
           </span>
-          <span className="text-[11px] font-semibold text-gray-400 mt-1">Business Manager</span>
+          <span className="text-[11px] font-semibold text-gray-400 mt-1">Gerente de Negócios</span>
         </div>
         <div className="h-11 w-11 rounded-full overflow-hidden border-2 border-white shadow-md ml-1 shrink-0">
           <img

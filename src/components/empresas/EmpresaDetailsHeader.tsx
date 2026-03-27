@@ -12,7 +12,7 @@ interface Props {
 
 export function EmpresaDetailsHeader({ empresa, onEdit, onDelete }: Props) {
   const navigate = useNavigate()
-  const isVerified = empresa.fiscal === 'Regular'
+  const isVerified = empresa.fiscal === 'Verificada'
 
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">

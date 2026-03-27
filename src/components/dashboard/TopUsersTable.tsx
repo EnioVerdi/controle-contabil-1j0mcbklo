@@ -18,28 +18,28 @@ import {
 import { cn } from '@/lib/utils'
 
 const initialData = [
-  { id: 1, name: 'NexaCorp', paid: 18400, spend: 6100, status: 'Active' },
-  { id: 2, name: 'MonoTech', paid: 11200, spend: 3200, status: 'At Risk' },
-  { id: 3, name: 'NexaCorp', paid: 18400, spend: 6100, status: 'Active' },
-  { id: 4, name: 'MonoTech', paid: 11200, spend: 3200, status: 'At Risk' },
+  { id: 1, name: 'NexaCorp', paid: 18400, spend: 6100, status: 'Ativo' },
+  { id: 2, name: 'MonoTech', paid: 11200, spend: 3200, status: 'Em Risco' },
+  { id: 3, name: 'NexaCorp', paid: 18400, spend: 6100, status: 'Ativo' },
+  { id: 4, name: 'MonoTech', paid: 11200, spend: 3200, status: 'Em Risco' },
 ]
 
 export function TopUsersTable() {
-  const [period, setPeriod] = useState('Monthly')
+  const [period, setPeriod] = useState('Mensal')
   const [data] = useState(initialData)
 
   return (
     <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_20px_rgba(0,0,0,0.02)] h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-bold text-gray-900 text-lg">Top Users</h3>
+        <h3 className="font-bold text-gray-900 text-lg">Principais Usuários</h3>
         <Select value={period} onValueChange={setPeriod}>
           <SelectTrigger className="w-[110px] h-9 text-xs rounded-xl border-gray-100 bg-gray-50">
-            <SelectValue placeholder="Period" />
+            <SelectValue placeholder="Período" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Weekly">Weekly</SelectItem>
-            <SelectItem value="Monthly">Monthly</SelectItem>
-            <SelectItem value="Yearly">Yearly</SelectItem>
+            <SelectItem value="Semanal">Semanal</SelectItem>
+            <SelectItem value="Mensal">Mensal</SelectItem>
+            <SelectItem value="Anual">Anual</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -50,19 +50,19 @@ export function TopUsersTable() {
             <TableRow className="border-b-0 hover:bg-transparent">
               <TableHead className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group">
                 <div className="flex items-center gap-1">
-                  User Name{' '}
+                  Nome{' '}
                   <ChevronDown className="w-3 h-3 text-gray-400 group-hover:text-gray-900 transition-colors" />
                 </div>
               </TableHead>
               <TableHead className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group">
                 <div className="flex items-center gap-1">
-                  Total Paid{' '}
+                  Valor Total{' '}
                   <ChevronDown className="w-3 h-3 text-gray-400 group-hover:text-gray-900 transition-colors" />
                 </div>
               </TableHead>
               <TableHead className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group">
                 <div className="flex items-center gap-1">
-                  Avg Monthly Spend{' '}
+                  Gasto Médio Mensal{' '}
                   <ChevronDown className="w-3 h-3 text-gray-400 group-hover:text-gray-900 transition-colors" />
                 </div>
               </TableHead>
@@ -90,7 +90,7 @@ export function TopUsersTable() {
                   <span
                     className={cn(
                       'inline-flex items-center justify-center px-3 py-1 text-[11px] font-bold rounded-md',
-                      row.status === 'Active'
+                      row.status === 'Ativo'
                         ? 'bg-green-50 text-green-500'
                         : 'bg-orange-50 text-orange-400',
                     )}

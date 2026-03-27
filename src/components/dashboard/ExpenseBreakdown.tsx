@@ -4,7 +4,7 @@ export function ExpenseBreakdown() {
   return (
     <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_20px_rgba(0,0,0,0.02)] relative h-[380px] flex flex-col">
       <div className="flex justify-between items-center relative z-10 mb-2">
-        <h3 className="font-bold text-gray-900 text-lg">Expense Breakdown</h3>
+        <h3 className="font-bold text-gray-900 text-lg">Detalhamento de Despesas</h3>
         <button className="h-8 w-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors">
           <ArrowRightLeft className="w-3.5 h-3.5" />
         </button>
@@ -90,7 +90,7 @@ export function ExpenseBreakdown() {
             className="w-6 h-6 rounded-full bg-blue-100"
           />
           <span className="text-[9px] font-bold text-gray-600 whitespace-nowrap">
-            Monthly Revenue Goal
+            Meta de Receita Mensal
           </span>
         </div>
         <div className="absolute top-[50%] left-[20%] -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 bg-white rounded-full pr-3 pl-1 py-1 shadow-sm border border-gray-100 z-10 min-w-max">
@@ -99,7 +99,9 @@ export function ExpenseBreakdown() {
             alt="E"
             className="w-6 h-6 rounded-full bg-orange-100"
           />
-          <span className="text-[9px] font-bold text-gray-600 whitespace-nowrap">Expense Cap</span>
+          <span className="text-[9px] font-bold text-gray-600 whitespace-nowrap">
+            Limite de Despesas
+          </span>
         </div>
         <div className="absolute top-[82%] left-[20%] -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 bg-white rounded-full pr-3 pl-1 py-1 shadow-sm border border-gray-100 z-10 min-w-max">
           <img
@@ -108,7 +110,7 @@ export function ExpenseBreakdown() {
             className="w-6 h-6 rounded-full bg-purple-100"
           />
           <span className="text-[9px] font-bold text-gray-600 whitespace-nowrap">
-            Profit Target
+            Meta de Lucro
           </span>
         </div>
 
@@ -140,8 +142,8 @@ export function ExpenseBreakdown() {
 
       <div className="mt-4 text-center z-10 pt-2 border-t border-dashed border-gray-200/60">
         <p className="text-[13px] font-medium text-gray-500">
-          Everyone must earn <strong className="text-gray-900 font-bold">$12,300</strong> to hit
-          monthly goal.
+          Todos devem arrecadar <strong className="text-gray-900 font-bold">$12.300</strong> para
+          atingir a meta mensal.
         </p>
       </div>
     </div>

@@ -5,7 +5,7 @@ export interface Empresa {
   responsavel: string
   atividade: string
   fechamento: string
-  fiscal: 'Regular' | 'Pendente'
+  fiscal: 'Verificada' | 'Pendente' | 'Em Transição'
   ultimaVerificacao: string
 
   regimeTributario?: string

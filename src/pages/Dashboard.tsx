@@ -10,16 +10,16 @@ export default function Dashboard() {
       {/* Top KPI Row */}
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
         <KpiCard
-          title="Revenue Achieved"
-          value="$1,18,000"
-          target="1,50,000"
+          title="Receita Alcançada"
+          value="$118.000"
+          target="150.000"
           trend={6}
           progress={78}
           colorClass="bg-blue-100"
           progressColorClass="bg-blue-500"
         />
         <KpiCard
-          title="Profit Margin (%)"
+          title="Margem de Lucro (%)"
           value="27"
           target="30"
           trend={-6}
@@ -28,7 +28,7 @@ export default function Dashboard() {
           progressColorClass="bg-green-500"
         />
         <KpiCard
-          title="Customer Growth"
+          title="Crescimento de Clientes"
           value="325"
           target="400"
           trend={6}
@@ -37,7 +37,7 @@ export default function Dashboard() {
           progressColorClass="bg-purple-500"
         />
         <KpiCard
-          title="Churn Rate (%)"
+          title="Taxa de Churn (%)"
           value="3.1"
           target="2.5"
           trend={-6}

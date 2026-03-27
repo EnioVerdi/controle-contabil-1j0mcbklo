@@ -13,7 +13,9 @@ export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
   return (
     <div className="grid gap-6 md:grid-cols-2">
       <div className="space-y-4 md:col-span-2">
-        <h3 className="font-semibold text-lg border-b pb-2 text-foreground">1. Básicos</h3>
+        <h3 className="font-semibold text-lg border-b pb-2 text-foreground">
+          1. Informações Básicas
+        </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -101,7 +103,7 @@ export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
       </div>
 
       <div className="space-y-4">
-        <h3 className="font-semibold text-lg border-b pb-2 text-foreground">3. Fiscais</h3>
+        <h3 className="font-semibold text-lg border-b pb-2 text-foreground">3. Detalhes Fiscais</h3>
         <FormField
           control={form.control}
           name="fechamento"
@@ -158,7 +160,9 @@ export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
       </div>
 
       <div className="space-y-4">
-        <h3 className="font-semibold text-lg border-b pb-2 text-foreground">4. Contábeis</h3>
+        <h3 className="font-semibold text-lg border-b pb-2 text-foreground">
+          4. Informações Contábeis
+        </h3>
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
