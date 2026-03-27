@@ -1,14 +1,14 @@
 import { Link, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
-  Building2,
+  Presentation,
   BarChart3,
   LineChart,
   CreditCard,
   HelpCircle,
   Settings,
   LogOut,
-  Hexagon,
+  Activity,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -21,18 +21,19 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 const navItems = [
-  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Empresas', path: '/', icon: Building2 },
-  { name: 'Estatísticas', path: '/estatisticas', icon: BarChart3 },
+  { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+  { name: 'Performance', path: '/dashboard', icon: Presentation },
+  { name: 'Statistics', path: '/estatisticas', icon: BarChart3 },
   { name: 'Analytics', path: '/analytics', icon: LineChart },
-  { name: 'Pagamentos', path: '/pagamentos', icon: CreditCard, badge: '3' },
+  { name: 'Payments', path: '/pagamentos', icon: CreditCard, badge: '3' },
 ]
 
 const supportItems = [
-  { name: 'Ajuda', path: '/ajuda', icon: HelpCircle },
-  { name: 'Configurações', path: '/configuracoes', icon: Settings },
+  { name: 'Help', path: '/ajuda', icon: HelpCircle },
+  { name: 'Settings', path: '/configuracoes', icon: Settings },
 ]
 
 export function AppSidebar() {
@@ -44,61 +45,72 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar className="border-r-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-      <SidebarHeader className="p-6 pb-2">
+    <Sidebar className="border-r-0 bg-white">
+      <SidebarHeader className="p-8 pb-4">
         <div className="flex items-center gap-3 px-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Hexagon className="h-5 w-5 fill-current" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-900 text-white">
+            <Activity className="h-5 w-5 fill-current" />
           </div>
-          <span className="text-xl font-bold tracking-tight">Finova</span>
+          <span className="text-xl font-extrabold tracking-tight text-gray-900">Finova</span>
         </div>
       </SidebarHeader>
 
       <SidebarContent className="px-4 py-4">
         <SidebarGroup>
-          <div className="mb-2 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <div className="mb-3 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
             Menu
           </div>
-          <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.name}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={isActive(item.path)}
-                  className="rounded-xl h-11 transition-all duration-200"
-                >
-                  <Link to={item.path} className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-3">
-                      <item.icon className="h-5 w-5" />
-                      <span className="font-medium">{item.name}</span>
-                    </div>
-                    {item.badge && (
-                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-100 px-1.5 text-xs font-medium text-red-600">
-                        {item.badge}
-                      </span>
+          <SidebarMenu className="gap-1.5">
+            {navItems.map((item) => {
+              const active = isActive(item.path)
+              return (
+                <SidebarMenuItem key={item.name}>
+                  <SidebarMenuButton
+                    asChild
+                    className={cn(
+                      'rounded-2xl h-12 transition-all duration-200 px-4 group',
+                      active
+                        ? 'bg-[#14151A] text-white hover:bg-[#14151A]/90 hover:text-white'
+                        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900',
                     )}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+                  >
+                    <Link to={item.path} className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3.5">
+                        <item.icon
+                          className={cn(
+                            'h-5 w-5',
+                            active ? 'text-white' : 'text-gray-400 group-hover:text-gray-900',
+                          )}
+                        />
+                        <span className="font-bold text-sm">{item.name}</span>
+                      </div>
+                      {item.badge && (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-red-100 text-[10px] font-bold text-red-600">
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )
+            })}
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup className="mt-6">
-          <div className="mb-2 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Suporte
+        <SidebarGroup className="mt-8">
+          <div className="mb-3 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+            Support
           </div>
-          <SidebarMenu>
+          <SidebarMenu className="gap-1.5">
             {supportItems.map((item) => (
               <SidebarMenuItem key={item.name}>
                 <SidebarMenuButton
                   asChild
-                  isActive={isActive(item.path)}
-                  className="rounded-xl h-11"
+                  className="rounded-2xl h-12 px-4 text-gray-500 hover:bg-gray-50 hover:text-gray-900 group"
                 >
-                  <Link to={item.path}>
-                    <item.icon className="h-5 w-5" />
-                    <span className="font-medium">{item.name}</span>
+                  <Link to={item.path} className="flex items-center gap-3.5">
+                    <item.icon className="h-5 w-5 text-gray-400 group-hover:text-gray-900" />
+                    <span className="font-bold text-sm">{item.name}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -107,30 +119,32 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-6 pt-0 space-y-6">
-        <div className="relative overflow-hidden rounded-[20px] bg-gradient-to-br from-white to-blue-50/50 p-5 shadow-soft border">
-          <div className="absolute -top-6 -left-6 h-24 w-24 rounded-full bg-yellow-400/20 blur-2xl" />
-          <div className="absolute -bottom-6 -right-6 h-24 w-24 rounded-full bg-blue-400/20 blur-2xl" />
-
-          <div className="relative z-10 flex flex-col items-center text-center">
-            <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-md">
-              <Hexagon className="h-5 w-5 fill-current" />
+      <SidebarFooter className="p-6 space-y-4 mb-4">
+        {/* Promotional Card exactly matching the visual reference */}
+        <div className="relative overflow-hidden rounded-[28px] bg-white p-6 shadow-[0_10px_40px_rgba(0,0,0,0.06)] border border-gray-50 flex flex-col justify-between min-h-[180px]">
+          <div className="relative z-10 flex flex-col text-left items-start">
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-gray-900 text-white shadow-md">
+              <Activity className="h-5 w-5 fill-current" />
             </div>
-            <p className="mb-4 text-sm font-semibold leading-snug text-foreground">
-              Construa o futuro com passos financeiros inteligentes hoje.
+            <p className="mb-5 text-[15px] pr-4 font-bold leading-snug text-gray-900 tracking-tight">
+              Build future wealth with smart financial steps today.
             </p>
-            <Button className="w-full rounded-xl" size="sm">
-              Começar Agora
+            <Button className="w-fit rounded-full bg-gray-900 hover:bg-black text-white px-6 h-9 text-xs font-bold shadow-lg shadow-gray-900/20">
+              Start Now
             </Button>
+          </div>
+          {/* Decorative Money Bag Emoji to match visual style */}
+          <div className="absolute -bottom-4 -right-4 text-7xl opacity-90 drop-shadow-2xl rotate-[-10deg] select-none pointer-events-none filter sepia-[0.2] hue-rotate-[90deg] saturate-[1.5]">
+            💰
           </div>
         </div>
 
         <Button
           variant="ghost"
-          className="w-full justify-start gap-3 rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50"
+          className="w-full justify-start gap-3.5 rounded-2xl h-12 px-4 text-red-500 hover:text-red-600 hover:bg-red-50 group mt-2"
         >
-          <LogOut className="h-5 w-5" />
-          <span className="font-semibold">Sair</span>
+          <LogOut className="h-5 w-5 group-hover:scale-105 transition-transform" />
+          <span className="font-bold text-sm">Logout</span>
         </Button>
       </SidebarFooter>
     </Sidebar>

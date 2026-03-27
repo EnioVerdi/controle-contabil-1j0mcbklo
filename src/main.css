@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 226 68% 97%; /* #F4F7FE */
+    --background: 226 68% 98%; /* Even lighter #F4F7FE slightly adjusted */
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -92,7 +92,7 @@
   }
 
   .card-container {
-    @apply bg-card rounded-[24px] shadow-soft p-6;
+    @apply bg-white rounded-[24px] shadow-[0_2px_20px_rgba(0,0,0,0.02)] border-0 p-6;
   }
 
   .badge-success {
