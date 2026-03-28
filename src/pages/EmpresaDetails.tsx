@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Empresa } from '@/types/empresa'
-import { mockEmpresas } from '@/data/mockEmpresas'
+import { fetchEmpresaById, updateEmpresa, deleteEmpresa } from '@/services/empresas'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
@@ -27,15 +27,37 @@ export default function EmpresaDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [empresa, setEmpresa] = useState<Empresa | null>(null)
+  const [loading, setLoading] = useState(true)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [newResponsavel, setNewResponsavel] = useState('')
 
   useEffect(() => {
-    const found = mockEmpresas.find((e) => e.id === id)
-    if (found) setEmpresa(found)
+    if (id) {
+      loadData(id)
+    }
   }, [id])
+
+  const loadData = async (empresaId: string) => {
+    try {
+      setLoading(true)
+      const data = await fetchEmpresaById(empresaId)
+      setEmpresa(data)
+    } catch (error) {
+      toast.error('Erro ao carregar empresa')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh]">
+        <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+      </div>
+    )
+  }
 
   if (!empresa) {
     return (
@@ -49,24 +71,42 @@ export default function EmpresaDetails() {
     )
   }
 
-  const handleEditSubmit = (data: Empresa) => {
-    setEmpresa(data)
-    setIsEditDialogOpen(false)
-    toast.success('Empresa atualizada com sucesso!')
+  const handleEditSubmit = async (data: Empresa) => {
+    try {
+      const updated = await updateEmpresa(empresa.id, data)
+      setEmpresa(updated)
+      setIsEditDialogOpen(false)
+      toast.success('Empresa atualizada com sucesso!')
+    } catch (error) {
+      toast.error('Erro ao atualizar empresa')
+    }
   }
 
-  const handleDelete = () => {
-    setIsDeleteDialogOpen(false)
-    toast.success('Empresa removida com sucesso!')
-    navigate('/')
+  const handleDelete = async () => {
+    try {
+      await deleteEmpresa(empresa.id)
+      setIsDeleteDialogOpen(false)
+      toast.success('Empresa removida com sucesso!')
+      navigate('/')
+    } catch (error) {
+      toast.error('Erro ao excluir empresa')
+    }
   }
 
-  const handleTransfer = () => {
+  const handleTransfer = async () => {
     if (newResponsavel.trim()) {
-      setEmpresa({ ...empresa, responsavel: newResponsavel.trim(), novoResponsavel: '' })
-      setIsTransferDialogOpen(false)
-      setNewResponsavel('')
-      toast.success('Responsável transferido com sucesso!')
+      try {
+        const updated = await updateEmpresa(empresa.id, {
+          responsavel: newResponsavel.trim(),
+          novoResponsavel: '',
+        })
+        setEmpresa(updated)
+        setIsTransferDialogOpen(false)
+        setNewResponsavel('')
+        toast.success('Responsável transferido com sucesso!')
+      } catch (error) {
+        toast.error('Erro ao transferir responsável')
+      }
     } else {
       toast.error('Informe o nome do novo responsável.')
     }
@@ -92,7 +132,7 @@ export default function EmpresaDetails() {
           <div className="py-4">
             <EmpresaForm
               empresa={empresa}
-              empresas={mockEmpresas}
+              empresas={[]}
               onSubmit={handleEditSubmit}
               onCancel={() => setIsEditDialogOpen(false)}
             />

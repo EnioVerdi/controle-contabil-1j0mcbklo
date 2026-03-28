@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react'
-import { mockEmpresas } from '@/data/mockEmpresas'
+import { useState, useMemo, useEffect } from 'react'
 import { Empresa } from '@/types/empresa'
+import { fetchEmpresas, createEmpresa, updateEmpresa, deleteEmpresa } from '@/services/empresas'
 import { useSearch } from '@/context/SearchContext'
 import { useToast } from '@/hooks/use-toast'
 
@@ -49,7 +49,8 @@ export default function Index() {
   const { searchTerm } = useSearch()
   const { toast } = useToast()
 
-  const [data, setData] = useState<Empresa[]>(mockEmpresas)
+  const [data, setData] = useState<Empresa[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [filterResp, setFilterResp] = useState<string>('all')
   const [filterAtiv, setFilterAtiv] = useState<string>('all')
   const [sortConfig, setSortConfig] = useState<SortConfig>(null)
@@ -59,11 +60,28 @@ export default function Index() {
   const [deleteData, setDeleteData] = useState<Empresa | null>(null)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
 
-  const responsaveis = useMemo(
-    () => Array.from(new Set(mockEmpresas.map((e) => e.responsavel))),
-    [],
-  )
-  const atividades = useMemo(() => Array.from(new Set(mockEmpresas.map((e) => e.atividade))), [])
+  useEffect(() => {
+    loadData()
+  }, [])
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true)
+      const empresas = await fetchEmpresas()
+      setData(empresas)
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível carregar as empresas.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const responsaveis = useMemo(() => Array.from(new Set(data.map((e) => e.responsavel))), [data])
+  const atividades = useMemo(() => Array.from(new Set(data.map((e) => e.atividade))), [data])
 
   const filteredAndSortedData = useMemo(() => {
     let result = [...data]
@@ -104,26 +122,45 @@ export default function Index() {
     })
   }
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deleteData) {
-      setData((prev) => prev.filter((e) => e.id !== deleteData.id))
-      toast({
-        title: 'Empresa excluída',
-        description: `${deleteData.nome} foi removida com sucesso.`,
-      })
-      setDeleteData(null)
+      try {
+        await deleteEmpresa(deleteData.id)
+        setData((prev) => prev.filter((e) => e.id !== deleteData.id))
+        toast({
+          title: 'Empresa excluída',
+          description: `${deleteData.nome} foi removida com sucesso.`,
+        })
+      } catch (error) {
+        toast({ title: 'Erro ao excluir', description: 'Ocorreu um erro.', variant: 'destructive' })
+      } finally {
+        setDeleteData(null)
+      }
     }
   }
 
-  const handleFormSubmit = (empresa: Empresa) => {
-    if (editData) {
-      setData((prev) => prev.map((item) => (item.id === editData.id ? empresa : item)))
-      toast({ title: 'Empresa atualizada', description: 'As informações foram salvas.' })
-      setEditData(null)
-    } else {
-      setData((prev) => [empresa, ...prev])
-      toast({ title: 'Empresa criada', description: 'A nova empresa foi adicionada com sucesso.' })
-      setIsCreateOpen(false)
+  const handleFormSubmit = async (empresa: Empresa) => {
+    try {
+      if (editData) {
+        const updated = await updateEmpresa(editData.id, empresa)
+        setData((prev) => prev.map((item) => (item.id === editData.id ? updated : item)))
+        toast({ title: 'Empresa atualizada', description: 'As informações foram salvas.' })
+        setEditData(null)
+      } else {
+        const created = await createEmpresa(empresa)
+        setData((prev) => [created, ...prev])
+        toast({
+          title: 'Empresa criada',
+          description: 'A nova empresa foi adicionada com sucesso.',
+        })
+        setIsCreateOpen(false)
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao salvar',
+        description: error.message || 'Ocorreu um erro inesperado.',
+        variant: 'destructive',
+      })
     }
   }
 
@@ -167,13 +204,19 @@ export default function Index() {
         </div>
       </div>
 
-      <EmpresasList
-        data={filteredAndSortedData}
-        onSort={handleSort}
-        onView={setViewData}
-        onEdit={setEditData}
-        onDelete={setDeleteData}
-      />
+      {isLoading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+        </div>
+      ) : (
+        <EmpresasList
+          data={filteredAndSortedData}
+          onSort={handleSort}
+          onView={setViewData}
+          onEdit={setEditData}
+          onDelete={setDeleteData}
+        />
+      )}
 
       {/* View Details Sheet */}
       <Sheet open={!!viewData} onOpenChange={(open) => !open && setViewData(null)}>
