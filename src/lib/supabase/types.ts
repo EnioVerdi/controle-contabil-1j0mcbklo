@@ -9,7 +9,75 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      empresas: {
+        Row: {
+          atividade: string
+          contabilizacao_folha: string | null
+          created_at: string
+          depreciacao: boolean | null
+          distribuicao_lucro: boolean | null
+          extratos: boolean | null
+          fechamento: string | null
+          fiscal: string
+          id: string
+          logo: string | null
+          nome: string
+          novo_responsavel: string | null
+          observacoes: string | null
+          parcelamentos: boolean | null
+          periodo_verificado: string | null
+          regime_folha: string | null
+          regime_tributario: string | null
+          responsavel: string
+          ultima_verificacao: string | null
+          user_id: string | null
+        }
+        Insert: {
+          atividade: string
+          contabilizacao_folha?: string | null
+          created_at?: string
+          depreciacao?: boolean | null
+          distribuicao_lucro?: boolean | null
+          extratos?: boolean | null
+          fechamento?: string | null
+          fiscal?: string
+          id: string
+          logo?: string | null
+          nome: string
+          novo_responsavel?: string | null
+          observacoes?: string | null
+          parcelamentos?: boolean | null
+          periodo_verificado?: string | null
+          regime_folha?: string | null
+          regime_tributario?: string | null
+          responsavel: string
+          ultima_verificacao?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          atividade?: string
+          contabilizacao_folha?: string | null
+          created_at?: string
+          depreciacao?: boolean | null
+          distribuicao_lucro?: boolean | null
+          extratos?: boolean | null
+          fechamento?: string | null
+          fiscal?: string
+          id?: string
+          logo?: string | null
+          nome?: string
+          novo_responsavel?: string | null
+          observacoes?: string | null
+          parcelamentos?: boolean | null
+          periodo_verificado?: string | null
+          regime_folha?: string | null
+          regime_tributario?: string | null
+          responsavel?: string
+          ultima_verificacao?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -153,3 +221,45 @@ export const Constants = {
 // IMPORTANT: The TypeScript types above map UUID, TEXT, VARCHAR all to "string".
 // Use the COLUMN TYPES section below to know the real PostgreSQL type for each column.
 // Always use the correct PostgreSQL type when writing SQL migrations.
+
+// --- COLUMN TYPES (actual PostgreSQL types) ---
+// Use this to know the real database type when writing migrations.
+// "string" in TypeScript types above may be uuid, text, varchar, timestamptz, etc.
+// Table: empresas
+//   id: text (not null)
+//   user_id: uuid (nullable)
+//   nome: text (not null)
+//   logo: text (nullable)
+//   responsavel: text (not null)
+//   atividade: text (not null)
+//   fechamento: text (nullable)
+//   fiscal: text (not null, default: 'Pendente'::text)
+//   ultima_verificacao: text (nullable)
+//   regime_tributario: text (nullable)
+//   novo_responsavel: text (nullable)
+//   regime_folha: text (nullable)
+//   contabilizacao_folha: text (nullable)
+//   depreciacao: boolean (nullable, default: false)
+//   extratos: boolean (nullable, default: false)
+//   parcelamentos: boolean (nullable, default: false)
+//   distribuicao_lucro: boolean (nullable, default: false)
+//   periodo_verificado: text (nullable)
+//   observacoes: text (nullable)
+//   created_at: timestamp with time zone (not null, default: now())
+
+// --- CONSTRAINTS ---
+// Table: empresas
+//   PRIMARY KEY empresas_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY empresas_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+
+// --- ROW LEVEL SECURITY POLICIES ---
+// Table: empresas
+//   Policy "authenticated_delete" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: true
+//   Policy "authenticated_insert" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: true
+//   Policy "authenticated_select" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
+//   Policy "authenticated_update" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: true
+//     WITH CHECK: true
