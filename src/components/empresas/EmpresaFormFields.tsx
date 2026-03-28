@@ -3,6 +3,13 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface EmpresaFormFieldsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,9 +69,22 @@ export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Regime Tributário</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um regime" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Lucro Real Mensal">Lucro Real Mensal</SelectItem>
+                    <SelectItem value="Lucro Real Trimestral">Lucro Real Trimestral</SelectItem>
+                    <SelectItem value="Lucro Presumido">Lucro Presumido</SelectItem>
+                    <SelectItem value="Simples Nacional">Simples Nacional</SelectItem>
+                    <SelectItem value="Simples Nacional Híbrido">
+                      Simples Nacional Híbrido
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
