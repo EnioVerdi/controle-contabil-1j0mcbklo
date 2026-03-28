@@ -16,6 +16,7 @@ export interface Empresa {
   extratos?: boolean
   parcelamentos?: boolean
   distribuicaoLucro?: boolean
+  receitaFinanceira?: boolean
   periodoVerificado?: string
   observacoes?: string
 }

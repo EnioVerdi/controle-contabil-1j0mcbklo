@@ -232,6 +232,18 @@ export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="receitaFinanceira"
+            render={({ field }) => (
+              <FormItem className="flex flex-col items-center justify-between rounded-lg border p-3 shadow-sm gap-2">
+                <FormLabel>Receita Financeira</FormLabel>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
         </div>
       </div>
 

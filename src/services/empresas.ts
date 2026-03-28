@@ -18,6 +18,7 @@ const mapToEmpresa = (row: any): Empresa => ({
   extratos: row.extratos || false,
   parcelamentos: row.parcelamentos || false,
   distribuicaoLucro: row.distribuicao_lucro || false,
+  receitaFinanceira: row.receita_financeira || false,
   periodoVerificado: row.periodo_verificado || undefined,
   observacoes: row.observacoes || undefined,
 })
@@ -41,6 +42,7 @@ const mapToDbRow = (empresa: Partial<Empresa>) => {
   if (empresa.extratos !== undefined) row.extratos = empresa.extratos
   if (empresa.parcelamentos !== undefined) row.parcelamentos = empresa.parcelamentos
   if (empresa.distribuicaoLucro !== undefined) row.distribuicao_lucro = empresa.distribuicaoLucro
+  if (empresa.receitaFinanceira !== undefined) row.receita_financeira = empresa.receitaFinanceira
   if (empresa.periodoVerificado !== undefined) row.periodo_verificado = empresa.periodoVerificado
   if (empresa.observacoes !== undefined) row.observacoes = empresa.observacoes
   return row

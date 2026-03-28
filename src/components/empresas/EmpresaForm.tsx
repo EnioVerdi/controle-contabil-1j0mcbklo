@@ -22,6 +22,7 @@ const baseSchema = z.object({
   extratos: z.boolean().default(false),
   parcelamentos: z.boolean().default(false),
   distribuicaoLucro: z.boolean().default(false),
+  receitaFinanceira: z.boolean().default(false),
   periodoVerificado: z.string().optional(),
   ultimaVerificacao: z.string().optional(),
   observacoes: z.string().optional(),
@@ -62,6 +63,7 @@ export function EmpresaForm({ empresa, empresas, onSubmit, onCancel }: EmpresaFo
       extratos: empresa?.extratos || false,
       parcelamentos: empresa?.parcelamentos || false,
       distribuicaoLucro: empresa?.distribuicaoLucro || false,
+      receitaFinanceira: empresa?.receitaFinanceira || false,
       periodoVerificado: empresa?.periodoVerificado || '',
       ultimaVerificacao: empresa?.ultimaVerificacao || '',
       observacoes: empresa?.observacoes || '',
@@ -91,6 +93,7 @@ export function EmpresaForm({ empresa, empresas, onSubmit, onCancel }: EmpresaFo
       extratos: values.extratos,
       parcelamentos: values.parcelamentos,
       distribuicaoLucro: values.distribuicaoLucro,
+      receitaFinanceira: values.receitaFinanceira,
       periodoVerificado: values.periodoVerificado,
       observacoes: values.observacoes,
     } as Empresa)
