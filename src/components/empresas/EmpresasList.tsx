@@ -97,8 +97,8 @@ export function EmpresasList({ data, onSort, onView, onEdit, onDelete }: Empresa
                   <TableCell className="text-muted-foreground">
                     {empresa.ultimaVerificacao}
                   </TableCell>
-                  <TableCell className="text-right pr-6">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <TableCell className="text-right pr-6 text-[#dba7a7]">
+                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity text-[#cfa8a8]">
                       <Button
                         variant="ghost"
                         size="icon"
