@@ -24,14 +24,13 @@ const initialData = [
   { id: 4, name: 'MonoTech', paid: 11200, spend: 3200, status: 'Em Risco' },
 ]
 
-export function TopUsersTable() {
+export function TopUsersTable({ data = [] }: { data?: any[] }) {
   const [period, setPeriod] = useState('Mensal')
-  const [data] = useState(initialData)
 
   return (
     <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_20px_rgba(0,0,0,0.02)] h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-bold text-gray-900 text-lg">Principais Usuários</h3>
+        <h3 className="font-bold text-gray-900 text-lg">Desempenho por Empresa</h3>
         <Select value={period} onValueChange={setPeriod}>
           <SelectTrigger className="w-[110px] h-9 text-xs rounded-xl border-gray-100 bg-gray-50">
             <SelectValue placeholder="Período" />
@@ -50,56 +49,66 @@ export function TopUsersTable() {
             <TableRow className="border-b-0 hover:bg-transparent">
               <TableHead className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group">
                 <div className="flex items-center gap-1">
-                  Nome{' '}
+                  Empresa{' '}
                   <ChevronDown className="w-3 h-3 text-gray-400 group-hover:text-gray-900 transition-colors" />
                 </div>
               </TableHead>
               <TableHead className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group">
                 <div className="flex items-center gap-1">
-                  Valor Total{' '}
+                  Concluídas{' '}
                   <ChevronDown className="w-3 h-3 text-gray-400 group-hover:text-gray-900 transition-colors" />
                 </div>
               </TableHead>
               <TableHead className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group">
                 <div className="flex items-center gap-1">
-                  Gasto Médio Mensal{' '}
+                  Pendentes{' '}
                   <ChevronDown className="w-3 h-3 text-gray-400 group-hover:text-gray-900 transition-colors" />
                 </div>
               </TableHead>
               <TableHead className="text-xs font-semibold text-gray-900 h-10 px-2 text-right">
-                Status
+                Progresso
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((row) => (
-              <TableRow
-                key={row.id}
-                className="border-b border-gray-50/50 hover:bg-gray-50/50 transition-colors"
-              >
-                <TableCell className="font-semibold text-sm text-gray-600 py-4 px-2">
-                  {row.name}
-                </TableCell>
-                <TableCell className="font-bold text-sm text-gray-900 py-4 px-2">
-                  ${row.paid.toLocaleString()}
-                </TableCell>
-                <TableCell className="font-semibold text-sm text-gray-500 py-4 px-2">
-                  ${row.spend.toLocaleString()}/mo
-                </TableCell>
-                <TableCell className="py-4 px-2 text-right">
-                  <span
-                    className={cn(
-                      'inline-flex items-center justify-center px-3 py-1 text-[11px] font-bold rounded-md',
-                      row.status === 'Ativo'
-                        ? 'bg-green-50 text-green-500'
-                        : 'bg-orange-50 text-orange-400',
-                    )}
-                  >
-                    {row.status}
-                  </span>
+            {data.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-8 text-gray-500">
+                  Nenhum dado encontrado
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              data.map((row: any) => (
+                <TableRow
+                  key={row.id}
+                  className="border-b border-gray-50/50 hover:bg-gray-50/50 transition-colors"
+                >
+                  <TableCell className="font-semibold text-sm text-gray-600 py-4 px-2">
+                    {row.nome}
+                  </TableCell>
+                  <TableCell className="font-bold text-sm text-green-600 py-4 px-2">
+                    {row.concluidas}
+                  </TableCell>
+                  <TableCell className="font-semibold text-sm text-orange-500 py-4 px-2">
+                    {row.pendentes}
+                  </TableCell>
+                  <TableCell className="py-4 px-2 text-right">
+                    <span
+                      className={cn(
+                        'inline-flex items-center justify-center px-3 py-1 text-[11px] font-bold rounded-md',
+                        row.progresso >= 80
+                          ? 'bg-green-50 text-green-500'
+                          : row.progresso >= 50
+                            ? 'bg-blue-50 text-blue-500'
+                            : 'bg-orange-50 text-orange-400',
+                      )}
+                    >
+                      {row.progresso}%
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

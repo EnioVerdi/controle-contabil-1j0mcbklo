@@ -17,19 +17,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-const data = [
-  { day: 'Dom', value: 110, label: '10%', type: 'revenue', isLoss: false },
-  { day: 'Seg', value: 140, label: '', type: 'striped-blue', isLoss: false },
-  { day: 'Ter', value: 95, label: '5%', type: 'revenue', isLoss: false },
-  { day: 'Qua', value: 130, label: '-5%', type: 'striped-gray', isLoss: true },
-  { day: 'Qui', value: 105, label: '10%', type: 'revenue', isLoss: false },
-  { day: 'Sex', value: 155, label: '20%', type: 'revenue', isLoss: false },
-  { day: 'Sáb', value: 70, label: '-3%', type: 'revenue', isLoss: true },
-]
-
 const CustomLabel = (props: any) => {
   const { x, y, width, index } = props
-  const entry = data[index]
+  const entry = props.data[index]
   if (!entry.label) return null
 
   const isNegative = entry.isLoss
@@ -55,8 +45,14 @@ const CustomLabel = (props: any) => {
   )
 }
 
-export function PerformanceSummary() {
-  const [period, setPeriod] = useState('Semanal')
+export function PerformanceSummary({ chartData = [] }: { chartData?: any[] }) {
+  const [period, setPeriod] = useState('Mensal')
+
+  // Fallback se não tiver dados
+  const displayData =
+    chartData.length > 0
+      ? chartData
+      : [{ day: 'Jan', value: 0, label: '', type: 'revenue', isLoss: false }]
 
   return (
     <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_20px_rgba(0,0,0,0.02)] h-full flex flex-col">
@@ -92,16 +88,16 @@ export function PerformanceSummary() {
         <div className="flex items-center gap-6">
           <div className="hidden sm:flex items-center gap-4 text-xs font-medium text-gray-500">
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-sm bg-blue-500"></div>Renda
+              <div className="w-2.5 h-2.5 rounded-sm bg-blue-500"></div>Concluídas
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-sm bg-gray-200"></div>Despesas
+              <div className="w-2.5 h-2.5 rounded-sm bg-gray-200"></div>Pendentes
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-8 h-4 rounded-full border border-green-300 flex items-center justify-center text-[8px] text-green-500 font-bold bg-white">
-                Lucro
+                Alta
               </div>
-              <span className="text-red-400">/ Prejuízo</span>
+              <span className="text-red-400">/ Baixa</span>
             </div>
           </div>
 
@@ -120,7 +116,11 @@ export function PerformanceSummary() {
 
       <div className="flex-1 w-full min-h-[250px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 20, right: 0, left: -20, bottom: 0 }} barSize={36}>
+          <BarChart
+            data={displayData}
+            margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
+            barSize={36}
+          >
             <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
             <XAxis
               dataKey="day"
@@ -133,16 +133,16 @@ export function PerformanceSummary() {
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 500 }}
-              tickFormatter={(val) => `$${val}`}
+              tickFormatter={(val) => `${val}`}
             />
             <Bar dataKey="value" radius={[8, 8, 8, 8]}>
-              {data.map((entry, index) => {
+              {displayData.map((entry, index) => {
                 let fill = '#3b82f6'
                 if (entry.type === 'striped-blue') fill = 'url(#stripe-blue)'
                 if (entry.type === 'striped-gray') fill = 'url(#stripe-gray)'
                 return <Cell key={`cell-${index}`} fill={fill} />
               })}
-              <LabelList content={<CustomLabel />} />
+              <LabelList content={<CustomLabel data={displayData} />} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>

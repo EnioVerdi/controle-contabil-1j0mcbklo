@@ -1,10 +1,18 @@
 import { ArrowRightLeft } from 'lucide-react'
 
-export function ExpenseBreakdown() {
+export function ExpenseBreakdown({
+  stats = { total: 0, concluido: 0, pendente: 0, aberto: 0 },
+}: {
+  stats?: any
+}) {
+  const percentConcluido = stats.total ? Math.round((stats.concluido / stats.total) * 100) : 0
+  const percentPendente = stats.total ? Math.round((stats.pendente / stats.total) * 100) : 0
+  const percentAberto = stats.total ? Math.round((stats.aberto / stats.total) * 100) : 0
+
   return (
     <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_20px_rgba(0,0,0,0.02)] relative h-[380px] flex flex-col">
       <div className="flex justify-between items-center relative z-10 mb-2">
-        <h3 className="font-bold text-gray-900 text-lg">Detalhamento de Despesas</h3>
+        <h3 className="font-bold text-gray-900 text-lg">Distribuição de Tarefas</h3>
         <button className="h-8 w-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 hover:bg-gray-100 transition-colors">
           <ArrowRightLeft className="w-3.5 h-3.5" />
         </button>
@@ -90,60 +98,61 @@ export function ExpenseBreakdown() {
             className="w-6 h-6 rounded-full bg-blue-100"
           />
           <span className="text-[9px] font-bold text-gray-600 whitespace-nowrap">
-            Meta de Receita Mensal
+            Tarefas Concluídas
           </span>
         </div>
         <div className="absolute top-[50%] left-[20%] -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 bg-white rounded-full pr-3 pl-1 py-1 shadow-sm border border-gray-100 z-10 min-w-max">
-          <img
-            src="https://img.usecurling.com/ppl/thumbnail?gender=male&seed=2"
-            alt="E"
-            className="w-6 h-6 rounded-full bg-orange-100"
-          />
+          <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-[10px] font-bold text-orange-600">
+            {stats.pendente}
+          </div>
           <span className="text-[9px] font-bold text-gray-600 whitespace-nowrap">
-            Limite de Despesas
+            Tarefas Não Iniciadas
           </span>
         </div>
         <div className="absolute top-[82%] left-[20%] -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 bg-white rounded-full pr-3 pl-1 py-1 shadow-sm border border-gray-100 z-10 min-w-max">
-          <img
-            src="https://img.usecurling.com/ppl/thumbnail?gender=female&seed=3"
-            alt="P"
-            className="w-6 h-6 rounded-full bg-purple-100"
-          />
+          <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center text-[10px] font-bold text-purple-600">
+            {stats.aberto}
+          </div>
           <span className="text-[9px] font-bold text-gray-600 whitespace-nowrap">
-            Meta de Lucro
+            Tarefas Abertas
           </span>
         </div>
 
         {/* Center Node */}
         <div className="absolute top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2 z-20">
           <div className="w-16 h-16 bg-white rounded-full flex flex-col items-center justify-center shadow-lg border-4 border-gray-50/80">
-            <span className="text-[9px] font-semibold text-gray-400 leading-none mb-0.5">60%</span>
-            <span className="text-sm font-bold text-gray-900 leading-none">$11,250</span>
+            <span className="text-[9px] font-semibold text-gray-400 leading-none mb-0.5">
+              Total
+            </span>
+            <span className="text-sm font-bold text-gray-900 leading-none">{stats.total}</span>
           </div>
         </div>
 
         {/* Right Nodes */}
         <div className="absolute top-[18%] left-[80%] -translate-x-1/2 -translate-y-1/2 z-10">
           <div className="bg-[#22c55e] text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-md">
-            20%
+            {percentConcluido}%
           </div>
         </div>
         <div className="absolute top-[50%] left-[80%] -translate-x-1/2 -translate-y-1/2 z-10">
           <div className="bg-[#94a3b8] text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-md">
-            50%
+            {percentPendente}%
           </div>
         </div>
         <div className="absolute top-[82%] left-[80%] -translate-x-1/2 -translate-y-1/2 z-10">
           <div className="bg-[#eab308] text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-md">
-            30%
+            {percentAberto}%
           </div>
         </div>
       </div>
 
       <div className="mt-4 text-center z-10 pt-2 border-t border-dashed border-gray-200/60">
         <p className="text-[13px] font-medium text-gray-500">
-          Todos devem arrecadar <strong className="text-gray-900 font-bold">$12.300</strong> para
-          atingir a meta mensal.
+          Você tem{' '}
+          <strong className="text-gray-900 font-bold">
+            {stats.pendente + stats.aberto} tarefas
+          </strong>{' '}
+          pendentes ou abertas neste período.
         </p>
       </div>
     </div>

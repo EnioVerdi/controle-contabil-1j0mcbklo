@@ -27,10 +27,14 @@ function LegendItem({
   )
 }
 
-export function TopCategories() {
+export function TopCategories({ categories = [] }: { categories?: any[] }) {
+  const top1 = categories[0] || { name: 'Simples Nacional', value: 0, percent: 0 }
+  const top2 = categories[1] || { name: 'Lucro Presumido', value: 0, percent: 0 }
+  const top3 = categories[2] || { name: 'Lucro Real', value: 0, percent: 0 }
+
   return (
     <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_20px_rgba(0,0,0,0.02)] h-full flex flex-col">
-      <h3 className="font-bold text-gray-900 text-lg mb-6">Categorias de Melhor Desempenho</h3>
+      <h3 className="font-bold text-gray-900 text-lg mb-6">Regimes Tributários</h3>
 
       <div className="flex flex-col sm:flex-row items-center justify-center gap-8 flex-1">
         {/* Bubbles Visualization */}
@@ -38,24 +42,24 @@ export function TopCategories() {
           {/* Green Bubble (Top) */}
           <div className="absolute top-0 right-4 w-[115px] h-[115px] rounded-full bg-[#22c55e] flex flex-col items-center justify-center text-white z-10 shadow-[0_8px_16px_rgba(34,197,94,0.3)] transition-transform hover:scale-105 cursor-pointer">
             <span className="text-[10px] font-semibold opacity-90 text-center leading-tight px-2">
-              Taxa Empresarial
+              {top1.name}
             </span>
-            <span className="text-lg font-bold tracking-tight mt-0.5">$1.250</span>
+            <span className="text-lg font-bold tracking-tight mt-0.5">{top1.value}</span>
           </div>
 
           {/* Blue Bubble (Bottom Left) */}
           <div className="absolute bottom-2 left-0 w-[110px] h-[110px] rounded-full bg-[#3b82f6] flex flex-col items-center justify-center text-white z-20 shadow-[0_8px_16px_rgba(59,130,246,0.3)] transition-transform hover:scale-105 cursor-pointer">
             <span className="text-[9px] font-semibold opacity-90 text-center leading-tight px-4">
-              Compra Única
+              {top2.name}
             </span>
-            <span className="text-base font-bold tracking-tight mt-0.5">$1.120</span>
+            <span className="text-base font-bold tracking-tight mt-0.5">{top2.value}</span>
           </div>
 
           {/* Yellow Bubble (Bottom Right) */}
           <div className="absolute bottom-1 right-2 w-[75px] h-[75px] rounded-full bg-[#eab308] flex flex-col items-center justify-center text-white z-30 shadow-[0_6px_12px_rgba(234,179,8,0.3)] transition-transform hover:scale-105 cursor-pointer border-2 border-white">
-            <span className="text-base font-bold tracking-tight mt-1">$663</span>
+            <span className="text-base font-bold tracking-tight mt-1">{top3.value}</span>
             <span className="text-[8px] font-semibold opacity-90 mt-0.5 text-center px-1 leading-[1]">
-              Taxas de Serviço
+              {top3.name}
             </span>
           </div>
         </div>
@@ -64,21 +68,21 @@ export function TopCategories() {
         <div className="w-full sm:w-auto flex-1 flex flex-col justify-center gap-5">
           <LegendItem
             color="bg-[#22c55e]"
-            title="Taxa Empresarial"
-            value="$1.250 (90%)"
-            progress={90}
+            title={top1.name}
+            value={`${top1.value} (${top1.percent}%)`}
+            progress={top1.percent}
           />
           <LegendItem
             color="bg-[#3b82f6]"
-            title="Compra Única"
-            value="$1.120 (80%)"
-            progress={80}
+            title={top2.name}
+            value={`${top2.value} (${top2.percent}%)`}
+            progress={top2.percent}
           />
           <LegendItem
             color="bg-[#eab308]"
-            title="Taxas de Serviço"
-            value="$663 (45%)"
-            progress={45}
+            title={top3.name}
+            value={`${top3.value} (${top3.percent}%)`}
+            progress={top3.percent}
           />
         </div>
       </div>
