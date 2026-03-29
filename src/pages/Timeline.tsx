@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   CheckCircle2,
   XCircle,
@@ -15,8 +15,8 @@ import {
   DollarSign,
   PieChart,
   Calculator,
+  Loader2,
 } from 'lucide-react'
-import { mockEmpresas } from '@/data/mockEmpresas'
 import {
   Select,
   SelectContent,
@@ -37,8 +37,11 @@ import {
 } from '@/components/ui/command'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-
-type Status = 'concluido' | 'aberto' | 'nao_iniciado'
+import { useToast } from '@/hooks/use-toast'
+import { fetchEmpresas } from '@/services/empresas'
+import { fetchTimeline, upsertTimelineMonth } from '@/services/timeline'
+import { Empresa } from '@/types/empresa'
+import { StatusTimeline } from '@/types/timeline'
 
 const MONTHS = [
   'Janeiro',
@@ -55,7 +58,7 @@ const MONTHS = [
   'Dezembro',
 ]
 
-const getStatusIcon = (status: Status) => {
+const getStatusIcon = (status: StatusTimeline) => {
   switch (status) {
     case 'concluido':
       return <CheckCircle2 className="w-6 h-6 text-green-600" />
@@ -66,7 +69,7 @@ const getStatusIcon = (status: Status) => {
   }
 }
 
-const getStatusColor = (status: Status) => {
+const getStatusColor = (status: StatusTimeline) => {
   switch (status) {
     case 'concluido':
       return 'border-green-200 bg-green-50 hover:border-green-300'
@@ -77,7 +80,7 @@ const getStatusColor = (status: Status) => {
   }
 }
 
-const getStatusLabel = (status: Status) => {
+const getStatusLabel = (status: StatusTimeline) => {
   switch (status) {
     case 'concluido':
       return <span className="text-green-600">Concluído</span>
@@ -88,7 +91,7 @@ const getStatusLabel = (status: Status) => {
   }
 }
 
-const nextStatus = (status: Status): Status => {
+const nextStatus = (status: StatusTimeline): StatusTimeline => {
   if (status === 'nao_iniciado') return 'aberto'
   if (status === 'aberto') return 'concluido'
   return 'nao_iniciado'
@@ -109,32 +112,109 @@ const InfoCard = ({ title, value, icon: Icon }: { title: string; value: string; 
 )
 
 export default function Timeline() {
-  const [selectedEmpresaId, setSelectedEmpresaId] = useState<string>(mockEmpresas[0]?.id || '')
+  const [empresas, setEmpresas] = useState<Empresa[]>([])
+  const [selectedEmpresaId, setSelectedEmpresaId] = useState<string>('')
   const [selectedAno, setSelectedAno] = useState<string>('2024')
   const [openCombobox, setOpenCombobox] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [loadingTimeline, setLoadingTimeline] = useState(false)
+  const [currentMonths, setCurrentMonths] = useState<StatusTimeline[]>(
+    Array(12).fill('nao_iniciado'),
+  )
+  const { toast } = useToast()
 
-  // Mock state for timeline clicks
-  const [timelineData, setTimelineData] = useState<Record<string, Status[]>>({})
+  useEffect(() => {
+    let isMounted = true
+    const load = async () => {
+      setLoading(true)
+      try {
+        const data = await fetchEmpresas()
+        if (isMounted) {
+          setEmpresas(data)
+          if (data.length > 0 && !selectedEmpresaId) {
+            setSelectedEmpresaId(data[0].id)
+          }
+        }
+      } catch (error) {
+        toast({ title: 'Erro ao carregar empresas', variant: 'destructive' })
+      } finally {
+        if (isMounted) setLoading(false)
+      }
+    }
+    load()
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
-  const empresa = mockEmpresas.find((e) => e.id === selectedEmpresaId)
-  const currentKey = `${selectedEmpresaId}-${selectedAno}`
-  const currentMonths = timelineData[currentKey] || Array(12).fill('nao_iniciado')
+  useEffect(() => {
+    if (!selectedEmpresaId || !selectedAno) return
+    let isMounted = true
 
-  const toggleMonth = (index: number) => {
-    const newMonths = [...currentMonths]
-    newMonths[index] = nextStatus(newMonths[index])
-    setTimelineData((prev) => ({
-      ...prev,
-      [currentKey]: newMonths,
-    }))
+    const loadTimelineData = async () => {
+      setLoadingTimeline(true)
+      try {
+        const data = await fetchTimeline(selectedEmpresaId, parseInt(selectedAno))
+        if (!isMounted) return
+
+        const newMonths: StatusTimeline[] = Array(12).fill('nao_iniciado')
+        data.forEach((item) => {
+          if (item.mes >= 1 && item.mes <= 12) {
+            newMonths[item.mes - 1] = item.status
+          }
+        })
+        setCurrentMonths(newMonths)
+      } catch (error) {
+        toast({ title: 'Erro ao carregar timeline', variant: 'destructive' })
+      } finally {
+        if (isMounted) setLoadingTimeline(false)
+      }
+    }
+    loadTimelineData()
+
+    return () => {
+      isMounted = false
+    }
+  }, [selectedEmpresaId, selectedAno])
+
+  const empresa = empresas.find((e) => e.id === selectedEmpresaId)
+
+  const toggleMonth = async (index: number) => {
+    if (!selectedEmpresaId) return
+
+    const currentStatus = currentMonths[index]
+    const next = nextStatus(currentStatus)
+
+    // Optimistic update
+    const updatedMonths = [...currentMonths]
+    updatedMonths[index] = next
+    setCurrentMonths(updatedMonths)
+
+    try {
+      await upsertTimelineMonth(selectedEmpresaId, parseInt(selectedAno), index + 1, next)
+    } catch (error) {
+      // Revert on error
+      const reverted = [...updatedMonths]
+      reverted[index] = currentStatus
+      setCurrentMonths(reverted)
+      toast({ title: 'Erro ao atualizar status', variant: 'destructive' })
+    }
   }
 
   const concludedCount = currentMonths.filter((s) => s === 'concluido').length
 
-  const formatBool = (val: boolean | undefined) => {
+  const formatBool = (val: boolean | undefined | null) => {
     if (val === true) return 'Sim'
     if (val === false) return 'Não'
     return 'Não informado'
+  }
+
+  if (loading) {
+    return (
+      <div className="flex h-[400px] items-center justify-center text-gray-400">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
   }
 
   return (
@@ -155,6 +235,7 @@ export default function Timeline() {
                 role="combobox"
                 aria-expanded={openCombobox}
                 className="w-full sm:w-[300px] justify-between bg-white"
+                disabled={empresas.length === 0}
               >
                 {empresa ? empresa.nome : 'Buscar empresa...'}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -163,7 +244,7 @@ export default function Timeline() {
             <PopoverContent className="w-full sm:w-[300px] p-0">
               <Command
                 filter={(value, search) => {
-                  const emp = mockEmpresas.find((e) => e.id === value)
+                  const emp = empresas.find((e) => e.id === value)
                   if (!emp) return 0
                   const match =
                     emp.nome.toLowerCase().includes(search.toLowerCase()) || emp.id.includes(search)
@@ -174,7 +255,7 @@ export default function Timeline() {
                 <CommandList>
                   <CommandEmpty>Nenhuma empresa encontrada.</CommandEmpty>
                   <CommandGroup>
-                    {mockEmpresas.map((emp) => (
+                    {empresas.map((emp) => (
                       <CommandItem
                         key={emp.id}
                         value={emp.id}
@@ -189,8 +270,10 @@ export default function Timeline() {
                             selectedEmpresaId === emp.id ? 'opacity-100' : 'opacity-0',
                           )}
                         />
-                        <span className="font-mono text-xs text-gray-400 mr-2 w-6">{emp.id}</span>
-                        {emp.nome}
+                        <span className="font-mono text-xs text-gray-400 mr-2 w-6 truncate">
+                          {emp.id.substring(0, 5)}
+                        </span>
+                        <span className="truncate">{emp.nome}</span>
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -218,7 +301,7 @@ export default function Timeline() {
             <CardHeader className="bg-gray-50/50 border-b border-gray-100 pb-5">
               <CardTitle className="text-lg font-semibold text-gray-800 flex items-center justify-between">
                 <span>Timeline Mensal - {selectedAno}</span>
-                <span className="text-sm font-normal text-gray-500">
+                <span className="text-sm font-normal text-gray-500 truncate ml-4 max-w-[50%]">
                   {empresa.nome} ({empresa.id})
                 </span>
               </CardTitle>
@@ -226,7 +309,12 @@ export default function Timeline() {
             <CardContent className="pt-10 pb-10 overflow-x-auto">
               <div className="relative min-w-[800px]">
                 <div className="absolute top-[44px] left-[4%] right-[4%] h-[2px] bg-gray-100 -translate-y-1/2 z-0" />
-                <div className="grid grid-cols-12 gap-2 relative z-10">
+                <div
+                  className={cn(
+                    'grid grid-cols-12 gap-2 relative z-10 transition-opacity duration-200',
+                    loadingTimeline && 'opacity-50 pointer-events-none',
+                  )}
+                >
                   {MONTHS.map((month, idx) => {
                     const status = currentMonths[idx]
                     return (
