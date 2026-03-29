@@ -97,10 +97,20 @@ const nextStatus = (status: StatusTimeline): StatusTimeline => {
   return 'nao_iniciado'
 }
 
-const InfoCard = ({ title, value, icon: Icon }: { title: string; value: string; icon: any }) => (
+const InfoCard = ({
+  title,
+  value,
+  icon: Icon,
+  colorClass = 'bg-gray-50 text-gray-500',
+}: {
+  title: string
+  value: string
+  icon: any
+  colorClass?: string
+}) => (
   <Card className="shadow-sm border-gray-100 hover:shadow-md transition-shadow">
     <CardContent className="p-4 flex items-start gap-3">
-      <div className="p-2 bg-gray-50 rounded-lg text-gray-500">
+      <div className={cn('p-2 rounded-lg', colorClass)}>
         <Icon className="w-4 h-4" />
       </div>
       <div>
@@ -374,43 +384,61 @@ export default function Timeline() {
                 title="Regime Tributário"
                 value={empresa.regimeTributario || 'Não informado'}
                 icon={Landmark}
+                colorClass="bg-blue-50 text-blue-600"
               />
               <InfoCard
                 title="Fechamento"
                 value={empresa.fechamento || 'Não informado'}
                 icon={CalendarCheck}
+                colorClass="bg-purple-50 text-purple-600"
               />
-              <InfoCard title="Fiscal" value={empresa.fiscal} icon={FileText} />
-              <InfoCard title="Folha" value={empresa.regimeFolha || 'Não informado'} icon={Users} />
+              <InfoCard
+                title="Fiscal"
+                value={empresa.fiscal}
+                icon={FileText}
+                colorClass="bg-orange-50 text-orange-600"
+              />
+              <InfoCard
+                title="Folha"
+                value={empresa.regimeFolha || 'Não informado'}
+                icon={Users}
+                colorClass="bg-pink-50 text-pink-600"
+              />
               <InfoCard
                 title="Contabilização Folha"
                 value={empresa.contabilizacaoFolha || 'Não informado'}
                 icon={Calculator}
+                colorClass="bg-indigo-50 text-indigo-600"
               />
               <InfoCard
                 title="Depreciação"
                 value={formatBool(empresa.depreciacao)}
                 icon={TrendingDown}
+                colorClass="bg-rose-50 text-rose-600"
               />
               <InfoCard
                 title="Extratos"
                 value={formatBool(empresa.extratos)}
                 icon={FileSpreadsheet}
+                colorClass="bg-teal-50 text-teal-600"
               />
               <InfoCard
                 title="Parcelamentos"
                 value={formatBool(empresa.parcelamentos)}
                 icon={CreditCard}
+                colorClass="bg-amber-50 text-amber-600"
               />
               <InfoCard
                 title="Receita Financeira"
                 value={formatBool(empresa.receitaFinanceira)}
                 icon={DollarSign}
+                colorClass="bg-emerald-50 text-emerald-600"
               />
               <InfoCard
                 title="Distribuição de Lucro"
                 value={formatBool(empresa.distribuicaoLucro)}
                 icon={PieChart}
+                colorClass="bg-cyan-50 text-cyan-600"
               />
             </div>
           </div>

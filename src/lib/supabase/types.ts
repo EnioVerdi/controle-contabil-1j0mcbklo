@@ -9,6 +9,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      empresa_timeline: {
+        Row: {
+          ano: number
+          created_at: string
+          empresa_id: string
+          id: string
+          mes: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          ano: number
+          created_at?: string
+          empresa_id: string
+          id?: string
+          mes: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          ano?: number
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          mes?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'empresa_timeline_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       empresas: {
         Row: {
           atividade: string
@@ -228,6 +266,14 @@ export const Constants = {
 // --- COLUMN TYPES (actual PostgreSQL types) ---
 // Use this to know the real database type when writing migrations.
 // "string" in TypeScript types above may be uuid, text, varchar, timestamptz, etc.
+// Table: empresa_timeline
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: text (not null)
+//   ano: integer (not null)
+//   mes: integer (not null)
+//   status: text (not null, default: 'nao_iniciado'::text)
+//   created_at: timestamp with time zone (not null, default: now())
+//   updated_at: timestamp with time zone (not null, default: now())
 // Table: empresas
 //   id: text (not null)
 //   user_id: uuid (nullable)
@@ -252,11 +298,27 @@ export const Constants = {
 //   receita_financeira: boolean (nullable, default: false)
 
 // --- CONSTRAINTS ---
+// Table: empresa_timeline
+//   UNIQUE empresa_timeline_empresa_id_ano_mes_key: UNIQUE (empresa_id, ano, mes)
+//   FOREIGN KEY empresa_timeline_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   CHECK empresa_timeline_mes_check: CHECK (((mes >= 1) AND (mes <= 12)))
+//   PRIMARY KEY empresa_timeline_pkey: PRIMARY KEY (id)
+//   CHECK empresa_timeline_status_check: CHECK ((status = ANY (ARRAY['concluido'::text, 'aberto'::text, 'nao_iniciado'::text])))
 // Table: empresas
 //   PRIMARY KEY empresas_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY empresas_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
 
 // --- ROW LEVEL SECURITY POLICIES ---
+// Table: empresa_timeline
+//   Policy "authenticated_delete_timeline" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: true
+//   Policy "authenticated_insert_timeline" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: true
+//   Policy "authenticated_select_timeline" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
+//   Policy "authenticated_update_timeline" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: true
+//     WITH CHECK: true
 // Table: empresas
 //   Policy "authenticated_delete" (DELETE, PERMISSIVE) roles={authenticated}
 //     USING: true
@@ -267,3 +329,7 @@ export const Constants = {
 //   Policy "authenticated_update" (UPDATE, PERMISSIVE) roles={authenticated}
 //     USING: true
 //     WITH CHECK: true
+
+// --- INDEXES ---
+// Table: empresa_timeline
+//   CREATE UNIQUE INDEX empresa_timeline_empresa_id_ano_mes_key ON public.empresa_timeline USING btree (empresa_id, ano, mes)
