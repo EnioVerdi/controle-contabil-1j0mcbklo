@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils'
 const navItems = [
   { name: 'Empresas', path: '/', icon: LayoutDashboard },
   { name: 'Painel', path: '/dashboard', icon: Presentation },
-  { name: 'Estatísticas', path: '/estatisticas', icon: BarChart3 },
+  { name: 'Gestão', path: '/gestao', icon: BarChart3 },
   { name: 'Análises', path: '/analytics', icon: LineChart },
   { name: 'Pagamentos', path: '/pagamentos', icon: CreditCard, badge: '3' },
 ]

@@ -26,6 +26,7 @@ export type Database = {
           observacoes: string | null
           parcelamentos: boolean | null
           periodo_verificado: string | null
+          receita_financeira: boolean | null
           regime_folha: string | null
           regime_tributario: string | null
           responsavel: string
@@ -48,6 +49,7 @@ export type Database = {
           observacoes?: string | null
           parcelamentos?: boolean | null
           periodo_verificado?: string | null
+          receita_financeira?: boolean | null
           regime_folha?: string | null
           regime_tributario?: string | null
           responsavel: string
@@ -70,6 +72,7 @@ export type Database = {
           observacoes?: string | null
           parcelamentos?: boolean | null
           periodo_verificado?: string | null
+          receita_financeira?: boolean | null
           regime_folha?: string | null
           regime_tributario?: string | null
           responsavel?: string
@@ -246,6 +249,7 @@ export const Constants = {
 //   periodo_verificado: text (nullable)
 //   observacoes: text (nullable)
 //   created_at: timestamp with time zone (not null, default: now())
+//   receita_financeira: boolean (nullable, default: false)
 
 // --- CONSTRAINTS ---
 // Table: empresas
