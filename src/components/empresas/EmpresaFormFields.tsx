@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -10,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { supabase } from '@/lib/supabase/client'
 
 interface EmpresaFormFieldsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -17,6 +19,18 @@ interface EmpresaFormFieldsProps {
 }
 
 export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
+  const [users, setUsers] = useState<{ id: string; name: string }[]>([])
+
+  useEffect(() => {
+    async function fetchUsers() {
+      const { data } = await supabase.from('profiles').select('id, name').order('name')
+      if (data) {
+        setUsers(data)
+      }
+    }
+    fetchUsers()
+  }, [])
+
   return (
     <div className="grid gap-6 md:grid-cols-2">
       <div className="space-y-4 md:col-span-2">
@@ -56,9 +70,23 @@ export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Atividade</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma atividade" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Comércio">Comércio</SelectItem>
+                    <SelectItem value="Indústria">Indústria</SelectItem>
+                    <SelectItem value="Serviços">Serviços</SelectItem>
+                    <SelectItem value="Construtora/Incorporadora">
+                      Construtora/Incorporadora
+                    </SelectItem>
+                    <SelectItem value="Administradora de Bens">Administradora de Bens</SelectItem>
+                    <SelectItem value="Entidades">Entidades</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
@@ -100,9 +128,20 @@ export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Responsável Atual</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um responsável" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {users.map((user) => (
+                    <SelectItem key={`resp-${user.id}`} value={user.name}>
+                      {user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
@@ -113,9 +152,21 @@ export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Novo Responsável</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um novo responsável" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="Nenhum">Nenhum</SelectItem>
+                  {users.map((user) => (
+                    <SelectItem key={`novo-${user.id}`} value={user.name}>
+                      {user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

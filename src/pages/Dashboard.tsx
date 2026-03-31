@@ -88,23 +88,24 @@ export default function Dashboard() {
   })
 
   // Categories (by regime_tributario)
-  const regimes = empresas.reduce(
-    (acc, emp) => {
-      const reg = emp.regime_tributario || 'Não Definido'
-      acc[reg] = (acc[reg] || 0) + 1
-      return acc
-    },
-    {} as Record<string, number>,
-  )
+  const targetRegimes = [
+    'Lucro Real Mensal',
+    'Lucro Real Trimestral',
+    'Lucro Presumido',
+    'Simples Nacional',
+    'Simples Nacional Híbrido',
+  ]
 
-  const categoriesData = Object.entries(regimes)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([name, value]) => ({
-      name,
-      value,
-      percent: Math.round((value / totalEmpresas) * 100),
-    }))
+  const categoriesData = targetRegimes
+    .map((regime) => {
+      const value = empresas.filter((emp) => emp.regime_tributario === regime).length
+      return {
+        name: regime,
+        value,
+        percent: totalEmpresas > 0 ? Math.round((value / totalEmpresas) * 100) : 0,
+      }
+    })
+    .sort((a, b) => b.value - a.value)
 
   // Top Empresas
   const topEmpresasData = empresas.map((emp) => {
