@@ -42,13 +42,13 @@ export function PerformanceSummary({ chartData = [] }: { chartData?: any[] }) {
         </div>
       </div>
 
-      <div className="flex-1 w-full min-h-[250px]">
+      <div className="flex-1 w-full min-h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={displayData}
-            margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
-            barSize={12}
-            barGap={2}
+            margin={{ top: 20, right: 10, left: -20, bottom: 20 }}
+            barCategoryGap="20%"
+            barGap={8}
           >
             <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
             <XAxis
@@ -56,7 +56,7 @@ export function PerformanceSummary({ chartData = [] }: { chartData?: any[] }) {
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 500 }}
-              dy={10}
+              dy={15}
             />
             <YAxis
               axisLine={false}
@@ -76,11 +76,29 @@ export function PerformanceSummary({ chartData = [] }: { chartData?: any[] }) {
               verticalAlign="top"
               align="right"
               iconType="circle"
-              wrapperStyle={{ fontSize: '12px', fontWeight: 500, paddingBottom: '20px' }}
+              wrapperStyle={{ fontSize: '12px', fontWeight: 500, paddingBottom: '30px' }}
             />
-            <Bar dataKey="concluido" name="Concluídas" fill="#22c55e" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="aberto" name="Abertas" fill="#eab308" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="pendente" name="Pendentes" fill="#94a3b8" radius={[4, 4, 0, 0]} />
+            <Bar
+              dataKey="concluido"
+              name="Concluídas"
+              fill="#22c55e"
+              radius={[6, 6, 0, 0]}
+              maxBarSize={45}
+            />
+            <Bar
+              dataKey="aberto"
+              name="Abertas"
+              fill="#eab308"
+              radius={[6, 6, 0, 0]}
+              maxBarSize={45}
+            />
+            <Bar
+              dataKey="pendente"
+              name="Pendentes"
+              fill="#94a3b8"
+              radius={[6, 6, 0, 0]}
+              maxBarSize={45}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
