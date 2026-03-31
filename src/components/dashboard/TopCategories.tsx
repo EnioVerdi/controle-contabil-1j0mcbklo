@@ -28,62 +28,100 @@ function LegendItem({
 }
 
 export function TopCategories({ categories = [] }: { categories?: any[] }) {
-  const top1 = categories[0] || { name: 'Simples Nacional', value: 0, percent: 0 }
-  const top2 = categories[1] || { name: 'Lucro Presumido', value: 0, percent: 0 }
-  const top3 = categories[2] || { name: 'Lucro Real', value: 0, percent: 0 }
+  const defaultCategories = [
+    { name: 'Lucro Real Mensal', value: 0, percent: 0 },
+    { name: 'Lucro Real Trimestral', value: 0, percent: 0 },
+    { name: 'Lucro Presumido', value: 0, percent: 0 },
+    { name: 'Simples Nacional', value: 0, percent: 0 },
+    { name: 'Simples Nacional Híbrido', value: 0, percent: 0 },
+  ]
+
+  const items = defaultCategories.map((defaultCat, index) => {
+    return categories[index] || defaultCat
+  })
+
+  const bubbleConfigs = [
+    {
+      size: 'w-[115px] h-[115px]',
+      pos: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+      bg: 'bg-[#22c55e]',
+      shadow: 'shadow-[0_8px_16px_rgba(34,197,94,0.3)]',
+      z: 'z-50',
+    },
+    {
+      size: 'w-[95px] h-[95px]',
+      pos: 'top-0 left-0',
+      bg: 'bg-[#3b82f6]',
+      shadow: 'shadow-[0_8px_16px_rgba(59,130,246,0.3)]',
+      z: 'z-40',
+    },
+    {
+      size: 'w-[85px] h-[85px]',
+      pos: 'bottom-0 right-2',
+      bg: 'bg-[#eab308]',
+      shadow: 'shadow-[0_8px_16px_rgba(234,179,8,0.3)]',
+      z: 'z-30',
+    },
+    {
+      size: 'w-[75px] h-[75px]',
+      pos: 'top-2 right-0',
+      bg: 'bg-[#a855f7]',
+      shadow: 'shadow-[0_8px_16px_rgba(168,85,247,0.3)]',
+      z: 'z-20',
+    },
+    {
+      size: 'w-[70px] h-[70px]',
+      pos: 'bottom-2 left-2',
+      bg: 'bg-[#f97316]',
+      shadow: 'shadow-[0_8px_16px_rgba(249,115,22,0.3)]',
+      z: 'z-10',
+    },
+  ]
 
   return (
     <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_20px_rgba(0,0,0,0.02)] h-full flex flex-col">
       <h3 className="font-bold text-gray-900 text-lg mb-6">Regimes Tributários</h3>
 
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-8 flex-1">
+      <div className="flex flex-col items-center justify-center gap-6 flex-1">
         {/* Bubbles Visualization */}
-        <div className="relative w-[180px] h-[180px] shrink-0 mx-auto">
-          {/* Green Bubble (Top) */}
-          <div className="absolute top-0 right-4 w-[115px] h-[115px] rounded-full bg-[#22c55e] flex flex-col items-center justify-center text-white z-10 shadow-[0_8px_16px_rgba(34,197,94,0.3)] transition-transform hover:scale-105 cursor-pointer">
-            <span className="text-[10px] font-semibold opacity-90 text-center leading-tight px-2">
-              {top1.name}
-            </span>
-            <span className="text-lg font-bold tracking-tight mt-0.5">{top1.value}</span>
-          </div>
-
-          {/* Blue Bubble (Bottom Left) */}
-          <div className="absolute bottom-2 left-0 w-[110px] h-[110px] rounded-full bg-[#3b82f6] flex flex-col items-center justify-center text-white z-20 shadow-[0_8px_16px_rgba(59,130,246,0.3)] transition-transform hover:scale-105 cursor-pointer">
-            <span className="text-[9px] font-semibold opacity-90 text-center leading-tight px-4">
-              {top2.name}
-            </span>
-            <span className="text-base font-bold tracking-tight mt-0.5">{top2.value}</span>
-          </div>
-
-          {/* Yellow Bubble (Bottom Right) */}
-          <div className="absolute bottom-1 right-2 w-[75px] h-[75px] rounded-full bg-[#eab308] flex flex-col items-center justify-center text-white z-30 shadow-[0_6px_12px_rgba(234,179,8,0.3)] transition-transform hover:scale-105 cursor-pointer border-2 border-white">
-            <span className="text-base font-bold tracking-tight mt-1">{top3.value}</span>
-            <span className="text-[8px] font-semibold opacity-90 mt-0.5 text-center px-1 leading-[1]">
-              {top3.name}
-            </span>
-          </div>
+        <div className="relative w-[200px] h-[200px] shrink-0 mx-auto">
+          {items.map((item, index) => {
+            const config = bubbleConfigs[index]
+            return (
+              <div
+                key={index}
+                className={cn(
+                  'absolute rounded-full flex flex-col items-center justify-center text-white transition-transform hover:scale-105 cursor-pointer border-2 border-white',
+                  config.pos,
+                  config.size,
+                  config.bg,
+                  config.shadow,
+                  config.z,
+                )}
+              >
+                <span className="text-[9px] font-semibold opacity-90 text-center leading-tight px-2">
+                  {item.name}
+                </span>
+                <span className="text-base font-bold tracking-tight mt-0.5">{item.value}</span>
+              </div>
+            )
+          })}
         </div>
 
         {/* Legend List */}
-        <div className="w-full sm:w-auto flex-1 flex flex-col justify-center gap-5">
-          <LegendItem
-            color="bg-[#22c55e]"
-            title={top1.name}
-            value={`${top1.value} (${top1.percent}%)`}
-            progress={top1.percent}
-          />
-          <LegendItem
-            color="bg-[#3b82f6]"
-            title={top2.name}
-            value={`${top2.value} (${top2.percent}%)`}
-            progress={top2.percent}
-          />
-          <LegendItem
-            color="bg-[#eab308]"
-            title={top3.name}
-            value={`${top3.value} (${top3.percent}%)`}
-            progress={top3.percent}
-          />
+        <div className="w-full flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+          {items.map((item, index) => {
+            const config = bubbleConfigs[index]
+            return (
+              <LegendItem
+                key={index}
+                color={config.bg}
+                title={item.name}
+                value={`${item.value} (${item.percent}%)`}
+                progress={item.percent}
+              />
+            )
+          })}
         </div>
       </div>
     </div>
