@@ -76,13 +76,14 @@ export default function Dashboard() {
   const chartData = mesesStr.map((mes, index) => {
     const monthTasks = filteredTimeline.filter((t) => t.mes === index + 1)
     const concluido = monthTasks.filter((t) => t.status === 'concluido').length
-    const isLoss = concluido < monthTasks.length / 2
+    const aberto = monthTasks.filter((t) => t.status === 'aberto').length
+    const pendente = monthTasks.filter((t) => t.status === 'nao_iniciado').length
     return {
       day: mes,
-      value: concluido,
-      label: monthTasks.length > 0 ? `${Math.round((concluido / monthTasks.length) * 100)}%` : '',
-      type: isLoss ? 'striped-gray' : 'revenue',
-      isLoss,
+      concluido,
+      aberto,
+      pendente,
+      total: monthTasks.length,
     }
   })
 
@@ -106,20 +107,21 @@ export default function Dashboard() {
     }))
 
   // Top Empresas
-  const topEmpresasData = empresas
-    .map((emp) => {
-      const empTasks = filteredTimeline.filter((t) => t.empresa_id === emp.id)
-      const concluido = empTasks.filter((t) => t.status === 'concluido').length
-      return {
-        id: emp.id,
-        nome: emp.nome,
-        concluidas: concluido,
-        pendentes: empTasks.length - concluido,
-        progresso: empTasks.length > 0 ? Math.round((concluido / empTasks.length) * 100) : 0,
-      }
-    })
-    .sort((a, b) => b.progresso - a.progresso)
-    .slice(0, 5)
+  const topEmpresasData = empresas.map((emp) => {
+    const empTasks = filteredTimeline.filter((t) => t.empresa_id === emp.id)
+    const concluido = empTasks.filter((t) => t.status === 'concluido').length
+    const aberto = empTasks.filter((t) => t.status === 'aberto').length
+    const pendente = empTasks.filter((t) => t.status === 'nao_iniciado').length
+    const total = empTasks.length
+    return {
+      id: emp.id,
+      nome: emp.nome,
+      concluidas: concluido,
+      aberto,
+      pendentes: pendente,
+      progresso: total > 0 ? Math.round((concluido / total) * 100) : 0,
+    }
+  })
 
   // Breakdown Data
   const breakdownStats = {

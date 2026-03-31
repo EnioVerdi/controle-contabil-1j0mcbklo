@@ -6,8 +6,8 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
-  Cell,
-  LabelList,
+  Tooltip,
+  Legend,
 } from 'recharts'
 import {
   Select,
@@ -17,90 +17,18 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
-const CustomLabel = (props: any) => {
-  const { x, y, width, index } = props
-  const entry = props.data[index]
-  if (!entry.label) return null
-
-  const isNegative = entry.isLoss
-  const strokeColor = isNegative ? '#fca5a5' : '#86efac'
-  const textColor = isNegative ? '#ef4444' : '#22c55e'
-
-  return (
-    <g transform={`translate(${x + width / 2},${y - 14})`}>
-      <rect
-        x="-18"
-        y="-10"
-        width="36"
-        height="20"
-        rx="10"
-        fill="white"
-        stroke={strokeColor}
-        strokeWidth="1.5"
-      />
-      <text x="0" y="3" fill={textColor} fontSize="10" fontWeight="700" textAnchor="middle">
-        {entry.label}
-      </text>
-    </g>
-  )
-}
-
 export function PerformanceSummary({ chartData = [] }: { chartData?: any[] }) {
   const [period, setPeriod] = useState('Mensal')
 
-  // Fallback se não tiver dados
   const displayData =
-    chartData.length > 0
-      ? chartData
-      : [{ day: 'Jan', value: 0, label: '', type: 'revenue', isLoss: false }]
+    chartData.length > 0 ? chartData : [{ day: 'Jan', concluido: 0, aberto: 0, pendente: 0 }]
 
   return (
     <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_20px_rgba(0,0,0,0.02)] h-full flex flex-col">
-      {/* SVG Definitions for Bar Patterns */}
-      <svg width="0" height="0" className="absolute">
-        <defs>
-          <pattern
-            id="stripe-blue"
-            patternUnits="userSpaceOnUse"
-            width="8"
-            height="8"
-            patternTransform="rotate(45)"
-          >
-            <rect width="8" height="8" fill="#eff6ff" />
-            <line x1="0" y1="0" x2="0" y2="8" stroke="#3b82f6" strokeWidth="3" />
-          </pattern>
-          <pattern
-            id="stripe-gray"
-            patternUnits="userSpaceOnUse"
-            width="8"
-            height="8"
-            patternTransform="rotate(45)"
-          >
-            <rect width="8" height="8" fill="#f8fafc" />
-            <line x1="0" y1="0" x2="0" y2="8" stroke="#cbd5e1" strokeWidth="3" />
-          </pattern>
-        </defs>
-      </svg>
-
       <div className="flex justify-between items-center mb-8">
         <h3 className="font-bold text-gray-900 text-lg">Resumo de Desempenho</h3>
 
         <div className="flex items-center gap-6">
-          <div className="hidden sm:flex items-center gap-4 text-xs font-medium text-gray-500">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-sm bg-blue-500"></div>Concluídas
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-sm bg-gray-200"></div>Pendentes
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className="w-8 h-4 rounded-full border border-green-300 flex items-center justify-center text-[8px] text-green-500 font-bold bg-white">
-                Alta
-              </div>
-              <span className="text-red-400">/ Baixa</span>
-            </div>
-          </div>
-
           <Select value={period} onValueChange={setPeriod}>
             <SelectTrigger className="w-[110px] h-9 text-xs rounded-xl border-gray-100 bg-gray-50">
               <SelectValue placeholder="Período" />
@@ -119,7 +47,8 @@ export function PerformanceSummary({ chartData = [] }: { chartData?: any[] }) {
           <BarChart
             data={displayData}
             margin={{ top: 20, right: 0, left: -20, bottom: 0 }}
-            barSize={36}
+            barSize={12}
+            barGap={2}
           >
             <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#f1f5f9" />
             <XAxis
@@ -135,15 +64,23 @@ export function PerformanceSummary({ chartData = [] }: { chartData?: any[] }) {
               tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 500 }}
               tickFormatter={(val) => `${val}`}
             />
-            <Bar dataKey="value" radius={[8, 8, 8, 8]}>
-              {displayData.map((entry, index) => {
-                let fill = '#3b82f6'
-                if (entry.type === 'striped-blue') fill = 'url(#stripe-blue)'
-                if (entry.type === 'striped-gray') fill = 'url(#stripe-gray)'
-                return <Cell key={`cell-${index}`} fill={fill} />
-              })}
-              <LabelList content={<CustomLabel data={displayData} />} />
-            </Bar>
+            <Tooltip
+              cursor={{ fill: 'rgba(241, 245, 249, 0.4)' }}
+              contentStyle={{
+                borderRadius: '12px',
+                border: 'none',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+              }}
+            />
+            <Legend
+              verticalAlign="top"
+              align="right"
+              iconType="circle"
+              wrapperStyle={{ fontSize: '12px', fontWeight: 500, paddingBottom: '20px' }}
+            />
+            <Bar dataKey="concluido" name="Concluídas" fill="#22c55e" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="aberto" name="Abertas" fill="#eab308" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="pendente" name="Pendentes" fill="#94a3b8" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

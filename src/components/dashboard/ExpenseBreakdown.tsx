@@ -31,12 +31,12 @@ export function ExpenseBreakdown({
               <stop offset="100%" stopColor="#6ee7b7" stopOpacity="0.4" />
             </linearGradient>
             <linearGradient id="lineGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#fde047" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#fcd34d" stopOpacity="0.4" />
+              <stop offset="0%" stopColor="#cbd5e1" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#94a3b8" stopOpacity="0.4" />
             </linearGradient>
             <linearGradient id="lineGrad3" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#e9d5ff" stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#d8b4fe" stopOpacity="0.4" />
+              <stop offset="0%" stopColor="#fde047" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#facc15" stopOpacity="0.4" />
             </linearGradient>
           </defs>
 
@@ -92,29 +92,27 @@ export function ExpenseBreakdown({
 
         {/* Left Nodes */}
         <div className="absolute top-[18%] left-[20%] -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 bg-white rounded-full pr-3 pl-1 py-1 shadow-sm border border-gray-100 z-10 min-w-max">
-          <img
-            src="https://img.usecurling.com/ppl/thumbnail?gender=female&seed=1"
-            alt="R"
-            className="w-6 h-6 rounded-full bg-blue-100"
-          />
+          <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center text-[10px] font-bold text-green-600">
+            {stats.concluido}
+          </div>
           <span className="text-[9px] font-bold text-gray-600 whitespace-nowrap">
             Tarefas Concluídas
           </span>
         </div>
         <div className="absolute top-[50%] left-[20%] -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 bg-white rounded-full pr-3 pl-1 py-1 shadow-sm border border-gray-100 z-10 min-w-max">
-          <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-[10px] font-bold text-orange-600">
+          <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-500">
             {stats.pendente}
           </div>
           <span className="text-[9px] font-bold text-gray-600 whitespace-nowrap">
-            Tarefas Não Iniciadas
+            Tarefas Pendentes
           </span>
         </div>
         <div className="absolute top-[82%] left-[20%] -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 bg-white rounded-full pr-3 pl-1 py-1 shadow-sm border border-gray-100 z-10 min-w-max">
-          <div className="w-6 h-6 rounded-full bg-purple-100 flex items-center justify-center text-[10px] font-bold text-purple-600">
+          <div className="w-6 h-6 rounded-full bg-yellow-100 flex items-center justify-center text-[10px] font-bold text-yellow-600">
             {stats.aberto}
           </div>
           <span className="text-[9px] font-bold text-gray-600 whitespace-nowrap">
-            Tarefas Abertas
+            Tarefas em Aberto
           </span>
         </div>
 

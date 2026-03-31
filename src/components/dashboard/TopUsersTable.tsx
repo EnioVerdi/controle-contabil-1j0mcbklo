@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -17,15 +17,42 @@ import {
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
 
-const initialData = [
-  { id: 1, name: 'NexaCorp', paid: 18400, spend: 6100, status: 'Ativo' },
-  { id: 2, name: 'MonoTech', paid: 11200, spend: 3200, status: 'Em Risco' },
-  { id: 3, name: 'NexaCorp', paid: 18400, spend: 6100, status: 'Ativo' },
-  { id: 4, name: 'MonoTech', paid: 11200, spend: 3200, status: 'Em Risco' },
-]
+type SortField = 'nome' | 'concluidas' | 'pendentes' | 'aberto' | 'progresso'
 
 export function TopUsersTable({ data = [] }: { data?: any[] }) {
   const [period, setPeriod] = useState('Mensal')
+  const [sortField, setSortField] = useState<SortField>('progresso')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDir('desc')
+    }
+  }
+
+  const sortedData = [...data].sort((a, b) => {
+    const valA = a[sortField]
+    const valB = b[sortField]
+    if (valA < valB) return sortDir === 'asc' ? -1 : 1
+    if (valA > valB) return sortDir === 'asc' ? 1 : -1
+    return 0
+  })
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) {
+      return (
+        <ChevronDown className="w-3 h-3 text-gray-300 group-hover:text-gray-400 transition-colors" />
+      )
+    }
+    return sortDir === 'asc' ? (
+      <ChevronUp className="w-3 h-3 text-gray-900" />
+    ) : (
+      <ChevronDown className="w-3 h-3 text-gray-900" />
+    )
+  }
 
   return (
     <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_20px_rgba(0,0,0,0.02)] h-full flex flex-col">
@@ -47,38 +74,57 @@ export function TopUsersTable({ data = [] }: { data?: any[] }) {
         <Table>
           <TableHeader>
             <TableRow className="border-b-0 hover:bg-transparent">
-              <TableHead className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group">
+              <TableHead
+                className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group"
+                onClick={() => handleSort('nome')}
+              >
                 <div className="flex items-center gap-1">
-                  Empresa{' '}
-                  <ChevronDown className="w-3 h-3 text-gray-400 group-hover:text-gray-900 transition-colors" />
+                  Empresa <SortIcon field="nome" />
                 </div>
               </TableHead>
-              <TableHead className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group">
+              <TableHead
+                className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group"
+                onClick={() => handleSort('concluidas')}
+              >
                 <div className="flex items-center gap-1">
-                  Concluídas{' '}
-                  <ChevronDown className="w-3 h-3 text-gray-400 group-hover:text-gray-900 transition-colors" />
+                  Concluídas <SortIcon field="concluidas" />
                 </div>
               </TableHead>
-              <TableHead className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group">
+              <TableHead
+                className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group"
+                onClick={() => handleSort('pendentes')}
+              >
                 <div className="flex items-center gap-1">
-                  Pendentes{' '}
-                  <ChevronDown className="w-3 h-3 text-gray-400 group-hover:text-gray-900 transition-colors" />
+                  Pendentes <SortIcon field="pendentes" />
                 </div>
               </TableHead>
-              <TableHead className="text-xs font-semibold text-gray-900 h-10 px-2 text-right">
-                Progresso
+              <TableHead
+                className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group"
+                onClick={() => handleSort('aberto')}
+              >
+                <div className="flex items-center gap-1">
+                  Em Aberto <SortIcon field="aberto" />
+                </div>
+              </TableHead>
+              <TableHead
+                className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group text-right"
+                onClick={() => handleSort('progresso')}
+              >
+                <div className="flex items-center justify-end gap-1">
+                  Progresso <SortIcon field="progresso" />
+                </div>
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.length === 0 ? (
+            {sortedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={5} className="text-center py-8 text-gray-500">
                   Nenhum dado encontrado
                 </TableCell>
               </TableRow>
             ) : (
-              data.map((row: any) => (
+              sortedData.map((row: any) => (
                 <TableRow
                   key={row.id}
                   className="border-b border-gray-50/50 hover:bg-gray-50/50 transition-colors"
@@ -89,8 +135,11 @@ export function TopUsersTable({ data = [] }: { data?: any[] }) {
                   <TableCell className="font-bold text-sm text-green-600 py-4 px-2">
                     {row.concluidas}
                   </TableCell>
-                  <TableCell className="font-semibold text-sm text-orange-500 py-4 px-2">
+                  <TableCell className="font-semibold text-sm text-gray-500 py-4 px-2">
                     {row.pendentes}
+                  </TableCell>
+                  <TableCell className="font-semibold text-sm text-yellow-600 py-4 px-2">
+                    {row.aberto}
                   </TableCell>
                   <TableCell className="py-4 px-2 text-right">
                     <span
@@ -100,7 +149,7 @@ export function TopUsersTable({ data = [] }: { data?: any[] }) {
                           ? 'bg-green-50 text-green-500'
                           : row.progresso >= 50
                             ? 'bg-blue-50 text-blue-500'
-                            : 'bg-orange-50 text-orange-400',
+                            : 'bg-yellow-50 text-yellow-600',
                       )}
                     >
                       {row.progresso}%
