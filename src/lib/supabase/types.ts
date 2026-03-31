@@ -119,6 +119,39 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          role: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          role?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          role?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -296,6 +329,15 @@ export const Constants = {
 //   observacoes: text (nullable)
 //   created_at: timestamp with time zone (not null, default: now())
 //   receita_financeira: boolean (nullable, default: false)
+// Table: profiles
+//   id: uuid (not null, default: gen_random_uuid())
+//   user_id: uuid (nullable)
+//   name: text (not null)
+//   email: text (not null)
+//   role: text (nullable, default: 'user'::text)
+//   status: text (nullable, default: 'Ativo'::text)
+//   created_at: timestamp with time zone (nullable, default: now())
+//   updated_at: timestamp with time zone (nullable, default: now())
 
 // --- CONSTRAINTS ---
 // Table: empresa_timeline
@@ -307,6 +349,10 @@ export const Constants = {
 // Table: empresas
 //   PRIMARY KEY empresas_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY empresas_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+// Table: profiles
+//   UNIQUE profiles_email_key: UNIQUE (email)
+//   PRIMARY KEY profiles_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY profiles_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
 
 // --- ROW LEVEL SECURITY POLICIES ---
 // Table: empresa_timeline
@@ -329,7 +375,35 @@ export const Constants = {
 //   Policy "authenticated_update" (UPDATE, PERMISSIVE) roles={authenticated}
 //     USING: true
 //     WITH CHECK: true
+// Table: profiles
+//   Policy "profiles_delete" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: true
+//   Policy "profiles_insert" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: true
+//   Policy "profiles_select" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
+//   Policy "profiles_update" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: true
+
+// --- DATABASE FUNCTIONS ---
+// FUNCTION set_current_timestamp_updated_at()
+//   CREATE OR REPLACE FUNCTION public.set_current_timestamp_updated_at()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//   AS $function$
+//   BEGIN
+//     NEW.updated_at = NOW();
+//     RETURN NEW;
+//   END;
+//   $function$
+//
+
+// --- TRIGGERS ---
+// Table: profiles
+//   set_profiles_updated_at: CREATE TRIGGER set_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION set_current_timestamp_updated_at()
 
 // --- INDEXES ---
 // Table: empresa_timeline
 //   CREATE UNIQUE INDEX empresa_timeline_empresa_id_ano_mes_key ON public.empresa_timeline USING btree (empresa_id, ano, mes)
+// Table: profiles
+//   CREATE UNIQUE INDEX profiles_email_key ON public.profiles USING btree (email)

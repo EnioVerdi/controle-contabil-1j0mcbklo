@@ -6,11 +6,19 @@ import { TopCategories } from '@/components/dashboard/TopCategories'
 import { TopUsersTable } from '@/components/dashboard/TopUsersTable'
 import { ExpenseBreakdown } from '@/components/dashboard/ExpenseBreakdown'
 import { Loader2 } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export default function Dashboard() {
   const [empresas, setEmpresas] = useState<any[]>([])
   const [timeline, setTimeline] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
 
   useEffect(() => {
     async function loadData() {
@@ -38,12 +46,17 @@ export default function Dashboard() {
     )
   }
 
+  // Filter timeline by the selected year
+  const filteredTimeline = timeline.filter((t) => t.ano === selectedYear)
+
   // KPIs
   const totalEmpresas = empresas.length
-  const tarefasConcluidas = timeline.filter((t) => t.status === 'concluido').length
-  const tarefasPendentes = timeline.filter((t) => t.status !== 'concluido').length
+  const tarefasEmAberto = filteredTimeline.filter((t) => t.status === 'aberto').length
+  const tarefasConcluidas = filteredTimeline.filter((t) => t.status === 'concluido').length
+  const tarefasPendentes = filteredTimeline.filter((t) => t.status === 'nao_iniciado').length
+  const totalTarefasAno = filteredTimeline.length
   const taxaConclusao =
-    timeline.length > 0 ? Math.round((tarefasConcluidas / timeline.length) * 100) : 0
+    totalTarefasAno > 0 ? Math.round((tarefasConcluidas / totalTarefasAno) * 100) : 0
 
   // Chart Data (grouped by month 1-12)
   const mesesStr = [
@@ -61,7 +74,7 @@ export default function Dashboard() {
     'Dez',
   ]
   const chartData = mesesStr.map((mes, index) => {
-    const monthTasks = timeline.filter((t) => t.mes === index + 1)
+    const monthTasks = filteredTimeline.filter((t) => t.mes === index + 1)
     const concluido = monthTasks.filter((t) => t.status === 'concluido').length
     const isLoss = concluido < monthTasks.length / 2
     return {
@@ -95,7 +108,7 @@ export default function Dashboard() {
   // Top Empresas
   const topEmpresasData = empresas
     .map((emp) => {
-      const empTasks = timeline.filter((t) => t.empresa_id === emp.id)
+      const empTasks = filteredTimeline.filter((t) => t.empresa_id === emp.id)
       const concluido = empTasks.filter((t) => t.status === 'concluido').length
       return {
         id: emp.id,
@@ -110,16 +123,41 @@ export default function Dashboard() {
 
   // Breakdown Data
   const breakdownStats = {
-    total: timeline.length,
+    total: totalTarefasAno,
     concluido: tarefasConcluidas,
-    pendente: timeline.filter((t) => t.status === 'nao_iniciado').length,
-    aberto: timeline.filter((t) => t.status === 'aberto').length,
+    pendente: tarefasPendentes,
+    aberto: tarefasEmAberto,
   }
 
   return (
     <div className="space-y-6 pb-10 animate-in fade-in duration-500 max-w-[1600px] mx-auto">
+      {/* Header & Year Filter */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-500">
+            Acompanhe os indicadores de performance e tarefas.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select
+            value={selectedYear.toString()}
+            onValueChange={(v) => setSelectedYear(parseInt(v))}
+          >
+            <SelectTrigger className="w-[120px] bg-white shadow-sm border-gray-200">
+              <SelectValue placeholder="Ano" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="2024">2024</SelectItem>
+              <SelectItem value="2025">2025</SelectItem>
+              <SelectItem value="2026">2026</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* Top KPI Row */}
-      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-3 xl:grid-cols-5">
         <KpiCard
           title="Total de Empresas"
           value={totalEmpresas}
@@ -129,21 +167,28 @@ export default function Dashboard() {
           progressColorClass="bg-blue-500"
         />
         <KpiCard
-          title="Tarefas Concluídas"
-          value={tarefasConcluidas}
-          target={timeline.length.toString()}
-          trend={5}
-          progress={taxaConclusao}
-          colorClass="bg-green-100"
-          progressColorClass="bg-green-500"
+          title="Tarefas Em Aberto"
+          value={tarefasEmAberto}
+          trend={-5}
+          progress={totalTarefasAno ? Math.round((tarefasEmAberto / totalTarefasAno) * 100) : 0}
+          colorClass="bg-orange-100"
+          progressColorClass="bg-orange-500"
         />
         <KpiCard
           title="Tarefas Pendentes"
           value={tarefasPendentes}
           trend={-2}
-          progress={100 - taxaConclusao}
+          progress={totalTarefasAno ? Math.round((tarefasPendentes / totalTarefasAno) * 100) : 0}
           colorClass="bg-yellow-100"
           progressColorClass="bg-yellow-400"
+        />
+        <KpiCard
+          title="Tarefas Concluídas"
+          value={tarefasConcluidas}
+          trend={5}
+          progress={totalTarefasAno ? Math.round((tarefasConcluidas / totalTarefasAno) * 100) : 0}
+          colorClass="bg-green-100"
+          progressColorClass="bg-green-500"
         />
         <KpiCard
           title="Taxa de Conclusão"
