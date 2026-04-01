@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   BarChart,
   Bar,
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { supabase } from '@/lib/supabase/client'
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -41,9 +42,96 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function PerformanceSummary({ chartData = [] }: { chartData?: any[] }) {
   const [period, setPeriod] = useState('Mensal')
+  const [data, setData] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // 1. Obter o total exato de empresas cadastradas no sistema
+        const { count: totalEmpresas, error: countError } = await supabase
+          .from('empresas')
+          .select('id', { count: 'exact', head: true })
+
+        if (countError) throw countError
+
+        const total = totalEmpresas || 0
+        const currentYear = new Date().getFullYear()
+
+        // 2. Obter as tarefas/status da timeline para o ano atual
+        const { data: timelineData, error: timelineError } = await supabase
+          .from('empresa_timeline')
+          .select('mes, status')
+          .eq('ano', currentYear)
+
+        if (timelineError) throw timelineError
+
+        const months = [
+          'Jan',
+          'Fev',
+          'Mar',
+          'Abr',
+          'Mai',
+          'Jun',
+          'Jul',
+          'Ago',
+          'Set',
+          'Out',
+          'Nov',
+          'Dez',
+        ]
+
+        // 3. Processar os dados garantindo que todas as empresas sejam consideradas
+        const processedData = months.map((monthName, index) => {
+          const monthNumber = index + 1
+          const monthRecords = timelineData?.filter((t) => t.mes === monthNumber) || []
+
+          const concluido = monthRecords.filter((t) => t.status === 'concluido').length
+          const aberto = monthRecords.filter((t) => t.status === 'aberto').length
+          // Pendentes são o total de empresas menos as que já estão em andamento ou concluídas
+          const pendente = Math.max(0, total - concluido - aberto)
+
+          return {
+            day: monthName,
+            concluido,
+            aberto,
+            pendente,
+          }
+        })
+
+        setData(processedData)
+      } catch (error) {
+        console.error('Erro ao buscar dados de desempenho:', error)
+      }
+    }
+
+    fetchDashboardData()
+
+    // Configurar realtime para manter o gráfico sempre atualizado
+    const channel = supabase
+      .channel('timeline_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'empresa_timeline' },
+        fetchDashboardData,
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'empresas' },
+        fetchDashboardData,
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
 
   const displayData =
-    chartData.length > 0 ? chartData : [{ day: 'Jan', concluido: 0, aberto: 0, pendente: 0 }]
+    data.length > 0
+      ? data
+      : chartData.length > 0
+        ? chartData
+        : [{ day: 'Jan', concluido: 0, aberto: 0, pendente: 0 }]
 
   return (
     <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_20px_rgba(0,0,0,0.02)] h-full flex flex-col">
