@@ -13,6 +13,22 @@ import {
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899']
 
+const CustomTooltipBubble = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload
+    return (
+      <div className="bg-white/80 backdrop-blur-md border border-white/50 p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+        <div className="flex items-center gap-3">
+          <span className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: data.fill }} />
+          <span className="text-slate-600 font-medium">{data.name}:</span>
+          <span className="font-bold text-slate-900">{data.value}</span>
+        </div>
+      </div>
+    )
+  }
+  return null
+}
+
 export function RegimesTributariosChart({ data = [] }: { data?: any[] }) {
   const defaultRegimes = [
     { name: 'Lucro Real Mensal', value: 0 },
@@ -38,33 +54,34 @@ export function RegimesTributariosChart({ data = [] }: { data?: any[] }) {
         <h3 className="font-bold text-gray-900 text-lg">Regimes Tributários</h3>
       </div>
 
-      <div className="flex-1 w-full min-h-[300px]">
+      <div className="flex-1 w-full min-h-[300px] flex items-center justify-center">
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: -20 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.5} />
             <XAxis type="number" dataKey="index" hide domain={[0, 6]} />
             <YAxis
               type="number"
               dataKey="value"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 12, fill: '#94a3b8', fontWeight: 500 }}
+              tick={{ fontSize: 13, fill: '#64748b', fontWeight: 500 }}
+              dx={-10}
             />
-            <ZAxis type="number" dataKey="value" range={[100, 1000]} />
+            <ZAxis type="number" dataKey="value" range={[150, 1200]} />
             <Tooltip
-              cursor={{ strokeDasharray: '3 3' }}
-              contentStyle={{
-                borderRadius: '12px',
-                border: 'none',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                padding: '12px',
-              }}
-              formatter={(value: number, name: string, props: any) => [value, props.payload.name]}
+              cursor={{ strokeDasharray: '3 3', stroke: '#cbd5e1' }}
+              content={<CustomTooltipBubble />}
             />
             <Legend
               verticalAlign="bottom"
               align="center"
-              wrapperStyle={{ paddingTop: '20px', fontSize: '12px', fontWeight: 500 }}
+              iconType="circle"
+              wrapperStyle={{
+                paddingTop: '20px',
+                fontSize: '13px',
+                fontWeight: 500,
+                color: '#475569',
+              }}
             />
             {chartData.map((entry, index) => (
               <Scatter key={entry.name} name={entry.name} data={[entry]} fill={entry.fill}>
