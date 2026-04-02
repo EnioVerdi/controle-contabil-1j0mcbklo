@@ -41,8 +41,8 @@ Deno.serve(async (req: Request) => {
     const { data: profile } = await supabaseClient
       .from('profiles')
       .select('role_id, role')
-      .eq('id', user.id)
-      .single()
+      .eq('user_id', user.id)
+      .maybeSingle()
 
     const role = (profile?.role_id || profile?.role || 'consultor').toLowerCase()
 

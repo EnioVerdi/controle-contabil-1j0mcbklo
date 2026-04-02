@@ -9,6 +9,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+        }
+        Relationships: []
+      }
       empresa_timeline: {
         Row: {
           ano: number
@@ -325,6 +355,14 @@ export const Constants = {
 // --- COLUMN TYPES (actual PostgreSQL types) ---
 // Use this to know the real database type when writing migrations.
 // "string" in TypeScript types above may be uuid, text, varchar, timestamptz, etc.
+// Table: audit_logs
+//   id: uuid (not null, default: gen_random_uuid())
+//   actor_id: uuid (nullable)
+//   action: text (not null)
+//   entity_type: text (not null)
+//   entity_id: uuid (nullable)
+//   details: jsonb (nullable)
+//   created_at: timestamp with time zone (not null, default: now())
 // Table: empresa_timeline
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: text (not null)
@@ -370,6 +408,9 @@ export const Constants = {
 //   description: text (nullable)
 
 // --- CONSTRAINTS ---
+// Table: audit_logs
+//   FOREIGN KEY audit_logs_actor_id_fkey: FOREIGN KEY (actor_id) REFERENCES auth.users(id) ON DELETE SET NULL
+//   PRIMARY KEY audit_logs_pkey: PRIMARY KEY (id)
 // Table: empresa_timeline
 //   UNIQUE empresa_timeline_empresa_id_ano_mes_key: UNIQUE (empresa_id, ano, mes)
 //   FOREIGN KEY empresa_timeline_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
@@ -388,6 +429,11 @@ export const Constants = {
 //   PRIMARY KEY roles_pkey: PRIMARY KEY (id)
 
 // --- ROW LEVEL SECURITY POLICIES ---
+// Table: audit_logs
+//   Policy "Admins can insert audit logs" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND ((profiles.role_id = 'admin'::text) OR (profiles.role = 'admin'::text)))))
+//   Policy "Admins can view audit logs" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND ((profiles.role_id = 'admin'::text) OR (profiles.role = 'admin'::text)))))
 // Table: empresa_timeline
 //   Policy "role_delete_timeline" (DELETE, PERMISSIVE) roles={authenticated}
 //     USING: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND (profiles.role_id = ANY (ARRAY['admin'::text, 'contador'::text])))))

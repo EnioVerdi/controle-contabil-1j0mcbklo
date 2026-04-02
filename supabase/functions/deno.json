@@ -1,6 +1,6 @@
 {
   "_versions": {
-    "check-permission": 2,
-    "manage-users": 1
+    "check-permission": 3,
+    "manage-users": 2
   }
 }

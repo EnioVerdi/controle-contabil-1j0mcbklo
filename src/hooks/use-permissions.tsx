@@ -17,8 +17,8 @@ export function usePermissions() {
     supabase
       .from('profiles')
       .select('role_id, role')
-      .eq('id', user.id)
-      .single()
+      .eq('user_id', user.id)
+      .maybeSingle()
       .then(({ data }) => {
         if (isMounted) {
           setRole((data?.role_id || data?.role || 'consultor').toLowerCase())
