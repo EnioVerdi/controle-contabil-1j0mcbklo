@@ -1,23 +1,30 @@
 import { supabase } from '@/lib/supabase/client'
-import { EmpresaTimeline, StatusTimeline } from '@/types/timeline'
+import { StatusTimeline } from '@/types/timeline'
 
-export const fetchTimeline = async (empresaId: string, ano: number): Promise<EmpresaTimeline[]> => {
+export async function fetchTimeline(empresaId: string, ano: number) {
   const { data, error } = await supabase
     .from('empresa_timeline')
     .select('*')
     .eq('empresa_id', empresaId)
     .eq('ano', ano)
-
   if (error) throw error
-  return data as EmpresaTimeline[]
+  return data
 }
 
-export const upsertTimelineMonth = async (
+export async function upsertTimelineMonth(
   empresaId: string,
   ano: number,
   mes: number,
   status: StatusTimeline,
-): Promise<EmpresaTimeline> => {
+) {
+  const { data: perm, error: permError } = await supabase.functions.invoke('check-permission', {
+    body: { action: 'edit_timeline' },
+  })
+
+  if (permError || !perm?.allowed) {
+    throw new Error('Você não tem permissão para realizar esta ação.')
+  }
+
   const { data, error } = await supabase
     .from('empresa_timeline')
     .upsert(
@@ -26,7 +33,6 @@ export const upsertTimelineMonth = async (
         ano,
         mes,
         status,
-        updated_at: new Date().toISOString(),
       },
       { onConflict: 'empresa_id,ano,mes' },
     )
@@ -34,5 +40,5 @@ export const upsertTimelineMonth = async (
     .single()
 
   if (error) throw error
-  return data as EmpresaTimeline
+  return data
 }

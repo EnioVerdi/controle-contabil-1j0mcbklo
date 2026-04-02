@@ -1,13 +1,12 @@
 export interface Empresa {
   id: string
   nome: string
-  logo: string
+  logo?: string
   responsavel: string
   atividade: string
-  fechamento: string
-  fiscal: 'Verificada' | 'Pendente' | 'Em Transição'
-  ultimaVerificacao: string
-
+  fechamento?: string
+  fiscal: string
+  ultimaVerificacao?: string
   regimeTributario?: string
   novoResponsavel?: string
   regimeFolha?: string

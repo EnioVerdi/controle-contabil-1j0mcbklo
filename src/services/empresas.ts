@@ -1,90 +1,94 @@
 import { supabase } from '@/lib/supabase/client'
 import { Empresa } from '@/types/empresa'
 
-const mapToEmpresa = (row: any): Empresa => ({
-  id: row.id,
-  nome: row.nome,
-  logo: row.logo,
-  responsavel: row.responsavel,
-  atividade: row.atividade,
-  fechamento: row.fechamento || undefined,
-  fiscal: row.fiscal as 'Verificada' | 'Pendente',
-  ultimaVerificacao: row.ultima_verificacao || undefined,
-  regimeTributario: row.regime_tributario || undefined,
-  novoResponsavel: row.novo_responsavel || undefined,
-  regimeFolha: row.regime_folha || undefined,
-  contabilizacaoFolha: row.contabilizacao_folha || undefined,
-  depreciacao: row.depreciacao || false,
-  extratos: row.extratos || false,
-  parcelamentos: row.parcelamentos || false,
-  distribuicaoLucro: row.distribuicao_lucro || false,
-  receitaFinanceira: row.receita_financeira || false,
-  periodoVerificado: row.periodo_verificado || undefined,
-  observacoes: row.observacoes || undefined,
-})
-
-const mapToDbRow = (empresa: Partial<Empresa>) => {
-  const row: any = {}
-  if (empresa.id !== undefined) row.id = empresa.id
-  if (empresa.nome !== undefined) row.nome = empresa.nome
-  if (empresa.logo !== undefined) row.logo = empresa.logo
-  if (empresa.responsavel !== undefined) row.responsavel = empresa.responsavel
-  if (empresa.atividade !== undefined) row.atividade = empresa.atividade
-  if (empresa.fechamento !== undefined) row.fechamento = empresa.fechamento
-  if (empresa.fiscal !== undefined) row.fiscal = empresa.fiscal
-  if (empresa.ultimaVerificacao !== undefined) row.ultima_verificacao = empresa.ultimaVerificacao
-  if (empresa.regimeTributario !== undefined) row.regime_tributario = empresa.regimeTributario
-  if (empresa.novoResponsavel !== undefined) row.novo_responsavel = empresa.novoResponsavel
-  if (empresa.regimeFolha !== undefined) row.regime_folha = empresa.regimeFolha
-  if (empresa.contabilizacaoFolha !== undefined)
-    row.contabilizacao_folha = empresa.contabilizacaoFolha
-  if (empresa.depreciacao !== undefined) row.depreciacao = empresa.depreciacao
-  if (empresa.extratos !== undefined) row.extratos = empresa.extratos
-  if (empresa.parcelamentos !== undefined) row.parcelamentos = empresa.parcelamentos
-  if (empresa.distribuicaoLucro !== undefined) row.distribuicao_lucro = empresa.distribuicaoLucro
-  if (empresa.receitaFinanceira !== undefined) row.receita_financeira = empresa.receitaFinanceira
-  if (empresa.periodoVerificado !== undefined) row.periodo_verificado = empresa.periodoVerificado
-  if (empresa.observacoes !== undefined) row.observacoes = empresa.observacoes
-  return row
+export async function fetchEmpresas(): Promise<Empresa[]> {
+  const { data, error } = await supabase.from('empresas').select('*')
+  if (error) throw error
+  return data.map(mapEmpresaFromDB)
 }
 
-export const fetchEmpresas = async (): Promise<Empresa[]> => {
+async function validatePermission(action: string) {
+  const { data, error } = await supabase.functions.invoke('check-permission', {
+    body: { action },
+  })
+  if (error || !data?.allowed) {
+    throw new Error('Você não tem permissão para realizar esta ação.')
+  }
+}
+
+export async function createEmpresa(empresa: Empresa): Promise<Empresa> {
+  await validatePermission('create_empresa')
   const { data, error } = await supabase
     .from('empresas')
-    .select('*')
-    .order('created_at', { ascending: false })
+    .insert(mapEmpresaToDB(empresa))
+    .select()
+    .single()
   if (error) throw error
-  return (data || []).map(mapToEmpresa)
+  return mapEmpresaFromDB(data)
 }
 
-export const fetchEmpresaById = async (id: string): Promise<Empresa> => {
-  const { data, error } = await supabase.from('empresas').select('*').eq('id', id).single()
-  if (error) throw error
-  return mapToEmpresa(data)
-}
-
-export const createEmpresa = async (empresa: Empresa): Promise<Empresa> => {
-  const dbRow = mapToDbRow(empresa)
-  const { data, error } = await supabase.from('empresas').insert(dbRow).select().single()
-  if (error) throw error
-  return mapToEmpresa(data)
-}
-
-export const updateEmpresa = async (id: string, empresa: Partial<Empresa>): Promise<Empresa> => {
-  const dbRow = mapToDbRow(empresa)
-  delete dbRow.id // Prevents updating the primary key
-
+export async function updateEmpresa(id: string, empresa: Empresa): Promise<Empresa> {
+  await validatePermission('edit_empresa')
   const { data, error } = await supabase
     .from('empresas')
-    .update(dbRow)
+    .update(mapEmpresaToDB(empresa))
     .eq('id', id)
     .select()
     .single()
   if (error) throw error
-  return mapToEmpresa(data)
+  return mapEmpresaFromDB(data)
 }
 
-export const deleteEmpresa = async (id: string): Promise<void> => {
+export async function deleteEmpresa(id: string): Promise<void> {
+  await validatePermission('delete_empresa')
   const { error } = await supabase.from('empresas').delete().eq('id', id)
   if (error) throw error
+}
+
+function mapEmpresaFromDB(db: any): Empresa {
+  return {
+    id: db.id,
+    nome: db.nome,
+    logo: db.logo || '',
+    responsavel: db.responsavel,
+    atividade: db.atividade,
+    fechamento: db.fechamento || '',
+    fiscal: db.fiscal,
+    ultimaVerificacao: db.ultima_verificacao || '',
+    regimeTributario: db.regime_tributario || '',
+    novoResponsavel: db.novo_responsavel || '',
+    regimeFolha: db.regime_folha || '',
+    contabilizacaoFolha: db.contabilizacao_folha || '',
+    depreciacao: db.depreciacao || false,
+    extratos: db.extratos || false,
+    parcelamentos: db.parcelamentos || false,
+    distribuicaoLucro: db.distribuicao_lucro || false,
+    receitaFinanceira: db.receita_financeira || false,
+    periodoVerificado: db.periodo_verificado || '',
+    observacoes: db.observacoes || '',
+  }
+}
+
+function mapEmpresaToDB(empresa: Empresa): any {
+  return {
+    id: empresa.id,
+    nome: empresa.nome,
+    logo: empresa.logo,
+    responsavel: empresa.responsavel,
+    atividade: empresa.atividade,
+    fechamento: empresa.fechamento,
+    fiscal: empresa.fiscal,
+    ultima_verificacao: empresa.ultimaVerificacao,
+    regime_tributario: empresa.regimeTributario,
+    novo_responsavel: empresa.novoResponsavel,
+    regime_folha: empresa.regimeFolha,
+    contabilizacao_folha: empresa.contabilizacaoFolha,
+    depreciacao: empresa.depreciacao,
+    extratos: empresa.extratos,
+    parcelamentos: empresa.parcelamentos,
+    distribuicao_lucro: empresa.distribuicaoLucro,
+    receita_financeira: empresa.receitaFinanceira,
+    periodo_verificado: empresa.periodoVerificado,
+    observacoes: empresa.observacoes,
+  }
 }

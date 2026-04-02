@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { usePermissions } from '@/hooks/use-permissions'
+import { useAuth } from '@/hooks/use-auth'
 
 const navItems = [
   { name: 'Empresas', path: '/', icon: LayoutDashboard },
@@ -38,11 +40,29 @@ const supportItems = [
 
 export function AppSidebar() {
   const location = useLocation()
+  const { role } = usePermissions()
+  const { signOut } = useAuth()
 
   const isActive = (path: string) => {
     if (path === '/' && location.pathname !== '/') return false
     return location.pathname.startsWith(path)
   }
+
+  const visibleNavItems = navItems.filter((item) => {
+    if (role === 'admin') return true
+    if (role === 'gerente') return ['/dashboard', '/analytics'].includes(item.path)
+    if (role === 'contador')
+      return ['/', '/timeline', '/analytics', '/pagamentos'].includes(item.path)
+    if (role === 'consultor')
+      return ['/', '/timeline', '/analytics', '/pagamentos'].includes(item.path)
+    return false
+  })
+
+  const visibleSupportItems = supportItems.filter((item) => {
+    if (role === 'admin') return true
+    if (item.path === '/configuracoes') return false
+    return true
+  })
 
   return (
     <Sidebar className="border-r-0 bg-white">
@@ -61,7 +81,7 @@ export function AppSidebar() {
             Menu
           </div>
           <SidebarMenu className="gap-1.5">
-            {navItems.map((item) => {
+            {visibleNavItems.map((item) => {
               const active = isActive(item.path)
               return (
                 <SidebarMenuItem key={item.name}>
@@ -102,7 +122,7 @@ export function AppSidebar() {
             Suporte
           </div>
           <SidebarMenu className="gap-1.5">
-            {supportItems.map((item) => (
+            {visibleSupportItems.map((item) => (
               <SidebarMenuItem key={item.name}>
                 <SidebarMenuButton
                   asChild
@@ -141,6 +161,7 @@ export function AppSidebar() {
 
         <Button
           variant="ghost"
+          onClick={() => signOut()}
           className="w-full justify-start gap-3.5 rounded-2xl h-12 px-4 text-red-500 hover:text-red-600 hover:bg-red-50 group mt-2"
         >
           <LogOut className="h-5 w-5 group-hover:scale-105 transition-transform" />

@@ -42,6 +42,7 @@ import { fetchEmpresas } from '@/services/empresas'
 import { fetchTimeline, upsertTimelineMonth } from '@/services/timeline'
 import { Empresa } from '@/types/empresa'
 import { StatusTimeline } from '@/types/timeline'
+import { usePermissions } from '@/hooks/use-permissions'
 
 const MONTHS = [
   'Janeiro',
@@ -132,6 +133,7 @@ export default function Timeline() {
     Array(12).fill('nao_iniciado'),
   )
   const { toast } = useToast()
+  const { can } = usePermissions()
 
   useEffect(() => {
     let isMounted = true
@@ -191,6 +193,14 @@ export default function Timeline() {
 
   const toggleMonth = async (index: number) => {
     if (!selectedEmpresaId) return
+    if (!can('edit_timeline')) {
+      toast({
+        title: 'Acesso negado',
+        description: 'Você não tem permissão para editar a timeline.',
+        variant: 'destructive',
+      })
+      return
+    }
 
     const currentStatus = currentMonths[index]
     const next = nextStatus(currentStatus)

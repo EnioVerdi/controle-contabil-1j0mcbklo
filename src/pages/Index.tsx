@@ -3,6 +3,7 @@ import { Empresa } from '@/types/empresa'
 import { fetchEmpresas, createEmpresa, updateEmpresa, deleteEmpresa } from '@/services/empresas'
 import { useSearch } from '@/context/SearchContext'
 import { useToast } from '@/hooks/use-toast'
+import { usePermissions } from '@/hooks/use-permissions'
 
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -48,6 +49,7 @@ type SortConfig = { key: SortKey; direction: 'asc' | 'desc' } | null
 export default function Index() {
   const { searchTerm } = useSearch()
   const { toast } = useToast()
+  const { can } = usePermissions()
 
   const [data, setData] = useState<Empresa[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -198,9 +200,11 @@ export default function Index() {
             </SelectContent>
           </Select>
 
-          <Button onClick={() => setIsCreateOpen(true)} className="rounded-xl h-10 gap-2">
-            <Plus className="h-4 w-4" /> Adicionar Empresa
-          </Button>
+          {can('create_empresa') && (
+            <Button onClick={() => setIsCreateOpen(true)} className="rounded-xl h-10 gap-2">
+              <Plus className="h-4 w-4" /> Adicionar Empresa
+            </Button>
+          )}
         </div>
       </div>
 
@@ -213,8 +217,8 @@ export default function Index() {
           data={filteredAndSortedData}
           onSort={handleSort}
           onView={setViewData}
-          onEdit={setEditData}
-          onDelete={setDeleteData}
+          onEdit={can('edit_empresa') ? setEditData : undefined}
+          onDelete={can('delete_empresa') ? setDeleteData : undefined}
         />
       )}
 

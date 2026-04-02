@@ -16,8 +16,8 @@ interface EmpresasListProps {
   data: Empresa[]
   onSort: (key: keyof Empresa) => void
   onView: (empresa: Empresa) => void
-  onEdit: (empresa: Empresa) => void
-  onDelete: (empresa: Empresa) => void
+  onEdit?: (empresa: Empresa) => void
+  onDelete?: (empresa: Empresa) => void
 }
 
 export function EmpresasList({ data, onSort, onView, onEdit, onDelete }: EmpresasListProps) {
@@ -111,24 +111,28 @@ export function EmpresasList({ data, onSort, onView, onEdit, onDelete }: Empresa
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Editar"
-                        className="h-8 w-8 rounded-lg hover:bg-slate-100"
-                        onClick={() => onEdit(empresa)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title="Excluir"
-                        className="h-8 w-8 rounded-lg hover:bg-red-50 hover:text-red-600"
-                        onClick={() => onDelete(empresa)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {onEdit && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Editar"
+                          className="h-8 w-8 rounded-lg hover:bg-slate-100"
+                          onClick={() => onEdit(empresa)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {onDelete && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          title="Excluir"
+                          className="h-8 w-8 rounded-lg hover:bg-red-50 hover:text-red-600"
+                          onClick={() => onDelete(empresa)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
