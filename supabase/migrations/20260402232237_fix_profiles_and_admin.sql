@@ -12,6 +12,10 @@ BEGIN
   SELECT id INTO v_admin_id FROM auth.users WHERE email = v_admin_email LIMIT 1;
 
   IF v_admin_id IS NOT NULL THEN
+    -- Remove any conflicting profile with the same email but different id
+    DELETE FROM public.profiles 
+    WHERE email = v_admin_email AND id != v_admin_id;
+
     INSERT INTO public.profiles (id, user_id, email, name, role_id, role)
     VALUES (
       v_admin_id,
@@ -23,6 +27,7 @@ BEGIN
     )
     ON CONFLICT (id) DO UPDATE
     SET user_id = EXCLUDED.user_id,
+        email = EXCLUDED.email,
         role_id = 'admin',
         role = 'admin';
   END IF;
