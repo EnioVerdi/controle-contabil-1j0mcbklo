@@ -64,6 +64,7 @@ Deno.serve(async (req: Request) => {
         email: userData.email,
         role_id: userData.role_id,
         role: userData.role_id,
+        status: userData.status || 'Ativo',
       })
       if (profileError) throw profileError
 
@@ -91,14 +92,19 @@ Deno.serve(async (req: Request) => {
       const { error: authError } = await adminClient.auth.admin.updateUserById(id, updateData)
       if (authError) throw authError
 
+      const profileUpdate: any = {
+        name,
+        email,
+        role_id,
+        role: role_id,
+      }
+      if (userData.status) {
+        profileUpdate.status = userData.status
+      }
+
       const { error: profileError } = await adminClient
         .from('profiles')
-        .update({
-          name,
-          email,
-          role_id,
-          role: role_id,
-        })
+        .update(profileUpdate)
         .eq('id', id)
       if (profileError) throw profileError
 

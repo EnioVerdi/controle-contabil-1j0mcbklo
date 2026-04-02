@@ -50,7 +50,10 @@ export default function Configuracoes() {
     email: '',
     role: 'user',
     status: 'Ativo',
+    password: '',
+    confirmPassword: '',
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { toast } = useToast()
 
@@ -77,39 +80,44 @@ export default function Configuracoes() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    if (formData.password !== formData.confirmPassword) {
+      toast({ title: 'As senhas não coincidem', variant: 'destructive' })
+      return
+    }
+
+    if (!editingId && formData.password.length < 8) {
+      toast({ title: 'A senha deve ter pelo menos 8 caracteres', variant: 'destructive' })
+      return
+    }
+
+    setIsSubmitting(true)
     try {
-      if (editingId) {
-        const { error } = await supabase
-          .from('profiles')
-          .update({
-            name: formData.name,
-            email: formData.email,
-            role: formData.role,
-            status: formData.status,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', editingId)
-
-        if (error) throw error
-        toast({ title: 'Usuário atualizado com sucesso' })
-      } else {
-        const { error } = await supabase.from('profiles').insert([
-          {
-            name: formData.name,
-            email: formData.email,
-            role: formData.role,
-            status: formData.status,
-          },
-        ])
-
-        if (error) throw error
-        toast({ title: 'Usuário criado com sucesso' })
+      const action = editingId ? 'update' : 'create'
+      const userData = {
+        id: editingId,
+        name: formData.name,
+        email: formData.email,
+        role_id: formData.role,
+        status: formData.status,
+        password: formData.password,
       }
 
+      const { data, error } = await supabase.functions.invoke('manage-users', {
+        body: { action, userData },
+      })
+
+      if (error || data?.error) {
+        throw new Error(error?.message || data?.error || 'Erro ao salvar usuário')
+      }
+
+      toast({ title: editingId ? 'Usuário atualizado com sucesso' : 'Usuário criado com sucesso' })
       setIsOpen(false)
       fetchProfiles()
     } catch (error: any) {
       toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -117,8 +125,12 @@ export default function Configuracoes() {
     if (!window.confirm('Tem certeza que deseja remover este usuário?')) return
 
     try {
-      const { error } = await supabase.from('profiles').delete().eq('id', id)
-      if (error) throw error
+      const { data, error } = await supabase.functions.invoke('manage-users', {
+        body: { action: 'delete', userData: { id } },
+      })
+      if (error || data?.error) {
+        throw new Error(error?.message || data?.error || 'Erro ao remover usuário')
+      }
       toast({ title: 'Usuário removido' })
       fetchProfiles()
     } catch (error: any) {
@@ -130,15 +142,24 @@ export default function Configuracoes() {
     setFormData({
       name: profile.name,
       email: profile.email,
-      role: profile.role,
-      status: profile.status,
+      role: profile.role || 'user',
+      status: profile.status || 'Ativo',
+      password: '',
+      confirmPassword: '',
     })
     setEditingId(profile.id)
     setIsOpen(true)
   }
 
   function openCreate() {
-    setFormData({ name: '', email: '', role: 'user', status: 'Ativo' })
+    setFormData({
+      name: '',
+      email: '',
+      role: 'user',
+      status: 'Ativo',
+      password: '',
+      confirmPassword: '',
+    })
     setEditingId(null)
     setIsOpen(true)
   }
@@ -222,8 +243,35 @@ export default function Configuracoes() {
                   </Select>
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="password">{editingId ? 'Nova Senha (opcional)' : 'Senha'}</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    required={!editingId}
+                    minLength={8}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                    required={!editingId || formData.password.length > 0}
+                    minLength={8}
+                  />
+                </div>
+              </div>
               <div className="flex justify-end pt-4">
-                <Button type="submit">{editingId ? 'Salvar Alterações' : 'Criar Usuário'}</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  {editingId ? 'Salvar Alterações' : 'Criar Usuário'}
+                </Button>
               </div>
             </form>
           </DialogContent>
