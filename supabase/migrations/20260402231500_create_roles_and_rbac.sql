@@ -12,7 +12,9 @@ ON CONFLICT (id) DO NOTHING;
 
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS role_id TEXT REFERENCES public.roles(id);
 
-UPDATE public.profiles SET role_id = LOWER(role) WHERE role IS NOT NULL AND role_id IS NULL;
+UPDATE public.profiles SET role_id = 'gerente' WHERE LOWER(role) = 'manager';
+UPDATE public.profiles SET role_id = 'contador' WHERE LOWER(role) = 'accountant';
+UPDATE public.profiles SET role_id = LOWER(role) WHERE role IS NOT NULL AND role_id IS NULL AND LOWER(role) IN (SELECT id FROM public.roles);
 UPDATE public.profiles SET role_id = 'consultor' WHERE role_id IS NULL;
 
 -- Admin user initialization

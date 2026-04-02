@@ -7,6 +7,12 @@ export async function fetchEmpresas(): Promise<Empresa[]> {
   return data.map(mapEmpresaFromDB)
 }
 
+export async function fetchEmpresaById(id: string): Promise<Empresa> {
+  const { data, error } = await supabase.from('empresas').select('*').eq('id', id).single()
+  if (error) throw error
+  return mapEmpresaFromDB(data)
+}
+
 async function validatePermission(action: string) {
   const { data, error } = await supabase.functions.invoke('check-permission', {
     body: { action },
