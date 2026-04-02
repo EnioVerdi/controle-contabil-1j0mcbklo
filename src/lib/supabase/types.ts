@@ -126,6 +126,7 @@ export type Database = {
           id: string
           name: string
           role: string | null
+          role_id: string | null
           status: string | null
           updated_at: string | null
           user_id: string | null
@@ -136,6 +137,7 @@ export type Database = {
           id?: string
           name: string
           role?: string | null
+          role_id?: string | null
           status?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -146,9 +148,33 @@ export type Database = {
           id?: string
           name?: string
           role?: string | null
+          role_id?: string | null
           status?: string | null
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'profiles_role_id_fkey'
+            columns: ['role_id']
+            isOneToOne: false
+            referencedRelation: 'roles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          description: string | null
+          id: string
+        }
+        Insert: {
+          description?: string | null
+          id: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
         }
         Relationships: []
       }
@@ -338,6 +364,10 @@ export const Constants = {
 //   status: text (nullable, default: 'Ativo'::text)
 //   created_at: timestamp with time zone (nullable, default: now())
 //   updated_at: timestamp with time zone (nullable, default: now())
+//   role_id: text (nullable)
+// Table: roles
+//   id: text (not null)
+//   description: text (nullable)
 
 // --- CONSTRAINTS ---
 // Table: empresa_timeline
@@ -352,38 +382,42 @@ export const Constants = {
 // Table: profiles
 //   UNIQUE profiles_email_key: UNIQUE (email)
 //   PRIMARY KEY profiles_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY profiles_role_id_fkey: FOREIGN KEY (role_id) REFERENCES roles(id)
 //   FOREIGN KEY profiles_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+// Table: roles
+//   PRIMARY KEY roles_pkey: PRIMARY KEY (id)
 
 // --- ROW LEVEL SECURITY POLICIES ---
 // Table: empresa_timeline
-//   Policy "authenticated_delete_timeline" (DELETE, PERMISSIVE) roles={authenticated}
+//   Policy "role_delete_timeline" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND (profiles.role_id = ANY (ARRAY['admin'::text, 'contador'::text])))))
+//   Policy "role_insert_timeline" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND (profiles.role_id = ANY (ARRAY['admin'::text, 'contador'::text])))))
+//   Policy "role_select_timeline" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: true
-//   Policy "authenticated_insert_timeline" (INSERT, PERMISSIVE) roles={authenticated}
-//     WITH CHECK: true
-//   Policy "authenticated_select_timeline" (SELECT, PERMISSIVE) roles={authenticated}
-//     USING: true
-//   Policy "authenticated_update_timeline" (UPDATE, PERMISSIVE) roles={authenticated}
-//     USING: true
+//   Policy "role_update_timeline" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND (profiles.role_id = ANY (ARRAY['admin'::text, 'contador'::text])))))
 //     WITH CHECK: true
 // Table: empresas
-//   Policy "authenticated_delete" (DELETE, PERMISSIVE) roles={authenticated}
+//   Policy "role_delete_empresas" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND (profiles.role_id = ANY (ARRAY['admin'::text, 'contador'::text])))))
+//   Policy "role_insert_empresas" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND (profiles.role_id = ANY (ARRAY['admin'::text, 'contador'::text])))))
+//   Policy "role_select_empresas" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: true
-//   Policy "authenticated_insert" (INSERT, PERMISSIVE) roles={authenticated}
-//     WITH CHECK: true
-//   Policy "authenticated_select" (SELECT, PERMISSIVE) roles={authenticated}
-//     USING: true
-//   Policy "authenticated_update" (UPDATE, PERMISSIVE) roles={authenticated}
-//     USING: true
+//   Policy "role_update_empresas" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND (profiles.role_id = ANY (ARRAY['admin'::text, 'contador'::text])))))
 //     WITH CHECK: true
 // Table: profiles
 //   Policy "profiles_delete" (DELETE, PERMISSIVE) roles={authenticated}
-//     USING: true
+//     USING: (EXISTS ( SELECT 1    FROM profiles p   WHERE ((p.id = auth.uid()) AND (p.role_id = 'admin'::text))))
 //   Policy "profiles_insert" (INSERT, PERMISSIVE) roles={authenticated}
 //     WITH CHECK: true
 //   Policy "profiles_select" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: true
 //   Policy "profiles_update" (UPDATE, PERMISSIVE) roles={authenticated}
-//     USING: true
+//     USING: ((id = auth.uid()) OR (EXISTS ( SELECT 1    FROM profiles p   WHERE ((p.id = auth.uid()) AND (p.role_id = 'admin'::text)))))
+//     WITH CHECK: true
 
 // --- DATABASE FUNCTIONS ---
 // FUNCTION set_current_timestamp_updated_at()

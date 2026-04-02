@@ -9,6 +9,7 @@ import {
   Settings,
   LogOut,
   Activity,
+  Users,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -31,6 +32,7 @@ const navItems = [
   { name: 'Timeline', path: '/timeline', icon: BarChart3 },
   { name: 'Análises', path: '/analytics', icon: LineChart },
   { name: 'Pagamentos', path: '/pagamentos', icon: CreditCard, badge: '3' },
+  { name: 'Usuários', path: '/usuarios', icon: Users },
 ]
 
 const supportItems = [
