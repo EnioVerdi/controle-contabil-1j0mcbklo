@@ -107,9 +107,8 @@ export default function Configuracoes() {
         body: { action, userData },
       })
 
-      if (error || data?.error) {
-        throw new Error(error?.message || data?.error || 'Erro ao salvar usuário')
-      }
+      if (error) throw error
+      if (data?.error) throw new Error(data.error)
 
       toast({ title: editingId ? 'Usuário atualizado com sucesso' : 'Usuário criado com sucesso' })
       setIsOpen(false)
@@ -128,9 +127,9 @@ export default function Configuracoes() {
       const { data, error } = await supabase.functions.invoke('manage-users', {
         body: { action: 'delete', userData: { id } },
       })
-      if (error || data?.error) {
-        throw new Error(error?.message || data?.error || 'Erro ao remover usuário')
-      }
+      if (error) throw error
+      if (data?.error) throw new Error(data.error)
+
       toast({ title: 'Usuário removido' })
       fetchProfiles()
     } catch (error: any) {

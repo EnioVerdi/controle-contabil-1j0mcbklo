@@ -52,11 +52,11 @@ Deno.serve(async (req: Request) => {
         email: userData.email,
         password: userData.password,
         email_confirm: true,
-        user_metadata: { name: userData.name },
+        user_metadata: { name: userData.name, role: userData.role_id },
       })
       if (authError) throw authError
 
-      // Create/Update profile
+      // Sincroniza dados com a tabela de perfis
       const { error: profileError } = await adminClient.from('profiles').upsert({
         id: authData.user.id,
         user_id: authData.user.id,
@@ -68,28 +68,28 @@ Deno.serve(async (req: Request) => {
       })
       if (profileError) throw profileError
 
-      // Audit log
-      await adminClient.from('audit_logs').insert({
-        actor_id: user.id,
-        action: 'CREATE_USER',
-        entity_type: 'USER',
-        entity_id: authData.user.id,
-        details: { email: userData.email, role: userData.role_id, name: userData.name },
-      })
-
       return new Response(JSON.stringify({ success: true, user: authData.user }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
     if (action === 'update') {
-      const { id, email, password, name, role_id } = userData
-      const updateData: any = { email, user_metadata: { name } }
+      const { id, email, password, name, role_id, status } = userData
+
+      // Procurar o auth.users.id correspondente ao profile.id
+      const { data: profileToUpdate } = await adminClient
+        .from('profiles')
+        .select('user_id')
+        .eq('id', id)
+        .single()
+      const authId = profileToUpdate?.user_id || id
+
+      const updateData: any = { email, user_metadata: { name, role: role_id } }
       if (password && password.trim() !== '') {
         updateData.password = password
       }
 
-      const { error: authError } = await adminClient.auth.admin.updateUserById(id, updateData)
+      const { error: authError } = await adminClient.auth.admin.updateUserById(authId, updateData)
       if (authError) throw authError
 
       const profileUpdate: any = {
@@ -98,8 +98,8 @@ Deno.serve(async (req: Request) => {
         role_id,
         role: role_id,
       }
-      if (userData.status) {
-        profileUpdate.status = userData.status
+      if (status) {
+        profileUpdate.status = status
       }
 
       const { error: profileError } = await adminClient
@@ -108,14 +108,6 @@ Deno.serve(async (req: Request) => {
         .eq('id', id)
       if (profileError) throw profileError
 
-      await adminClient.from('audit_logs').insert({
-        actor_id: user.id,
-        action: 'UPDATE_USER',
-        entity_type: 'USER',
-        entity_id: id,
-        details: { email, role: role_id, name, password_changed: !!password },
-      })
-
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
@@ -123,16 +115,18 @@ Deno.serve(async (req: Request) => {
 
     if (action === 'delete') {
       const { id } = userData
-      const { error: authError } = await adminClient.auth.admin.deleteUser(id)
+
+      const { data: profileToDelete } = await adminClient
+        .from('profiles')
+        .select('user_id')
+        .eq('id', id)
+        .single()
+      const authId = profileToDelete?.user_id || id
+
+      const { error: authError } = await adminClient.auth.admin.deleteUser(authId)
       if (authError) throw authError
 
-      await adminClient.from('audit_logs').insert({
-        actor_id: user.id,
-        action: 'DELETE_USER',
-        entity_type: 'USER',
-        entity_id: id,
-        details: { deleted_id: id },
-      })
+      await adminClient.from('profiles').delete().eq('id', id)
 
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -141,8 +135,9 @@ Deno.serve(async (req: Request) => {
 
     throw new Error('Invalid action')
   } catch (error: any) {
+    // Retornar 200 com a propriedade error para o front conseguir extrair a mensagem limpa
     return new Response(JSON.stringify({ error: error.message }), {
-      status: 400,
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }

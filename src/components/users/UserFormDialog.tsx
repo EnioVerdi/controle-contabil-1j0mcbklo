@@ -91,9 +91,8 @@ export function UserFormDialog({ open, onOpenChange, user, onSuccess }: Props) {
         body: { action, userData },
       })
 
-      if (error || data?.error) {
-        throw new Error(error?.message || data?.error || 'Erro ao salvar usuário')
-      }
+      if (error) throw error
+      if (data?.error) throw new Error(data.error)
 
       toast({
         title: 'Sucesso',
