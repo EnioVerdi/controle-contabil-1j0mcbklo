@@ -41,7 +41,8 @@ import {
 import { Label } from '@/components/ui/label'
 import { EmpresasList } from '@/components/empresas/EmpresasList'
 import { EmpresaForm } from '@/components/empresas/EmpresaForm'
-import { Plus } from 'lucide-react'
+import { ImportCsvDialog } from '@/components/empresas/ImportCsvDialog'
+import { Plus, UploadCloud } from 'lucide-react'
 
 type SortKey = keyof Empresa
 type SortConfig = { key: SortKey; direction: 'asc' | 'desc' } | null
@@ -61,6 +62,7 @@ export default function Index() {
   const [editData, setEditData] = useState<Empresa | null>(null)
   const [deleteData, setDeleteData] = useState<Empresa | null>(null)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isImportOpen, setIsImportOpen] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -201,9 +203,18 @@ export default function Index() {
           </Select>
 
           {can('create_empresa') && (
-            <Button onClick={() => setIsCreateOpen(true)} className="rounded-xl h-10 gap-2">
-              <Plus className="h-4 w-4" /> Adicionar Empresa
-            </Button>
+            <>
+              <Button
+                onClick={() => setIsImportOpen(true)}
+                variant="outline"
+                className="rounded-xl h-10 gap-2 bg-white"
+              >
+                <UploadCloud className="h-4 w-4" /> Importar CSV
+              </Button>
+              <Button onClick={() => setIsCreateOpen(true)} className="rounded-xl h-10 gap-2">
+                <Plus className="h-4 w-4" /> Adicionar Empresa
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -316,6 +327,13 @@ export default function Index() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ImportCsvDialog
+        open={isImportOpen}
+        onOpenChange={setIsImportOpen}
+        onSuccess={loadData}
+        existingEmpresas={data}
+      />
 
       {/* Delete Alert */}
       <AlertDialog open={!!deleteData} onOpenChange={(open) => !open && setDeleteData(null)}>

@@ -22,6 +22,29 @@ async function validatePermission(action: string) {
   }
 }
 
+export async function importEmpresas(
+  empresas: Partial<Empresa>[],
+  duplicateAction: 'overwrite' | 'skip',
+): Promise<void> {
+  await validatePermission('create_empresa')
+
+  const dbRecords = empresas.map((empresa) => ({
+    id: empresa.id,
+    nome: empresa.nome,
+    atividade: empresa.atividade,
+    regime_tributario: empresa.regimeTributario,
+    responsavel: empresa.responsavel || 'A Definir',
+    fiscal: 'Pendente',
+  }))
+
+  const { error } = await supabase.from('empresas').upsert(dbRecords, {
+    onConflict: 'id',
+    ignoreDuplicates: duplicateAction === 'skip',
+  })
+
+  if (error) throw error
+}
+
 export async function createEmpresa(empresa: Empresa): Promise<Empresa> {
   await validatePermission('create_empresa')
   const { data, error } = await supabase
