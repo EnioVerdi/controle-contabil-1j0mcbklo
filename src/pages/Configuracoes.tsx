@@ -33,13 +33,15 @@ interface Profile {
   id: string
   name: string
   email: string
-  role: string
+  role: string | null
+  role_id: string | null
   status: string
   created_at: string
 }
 
 export default function Configuracoes() {
   const [profiles, setProfiles] = useState<Profile[]>([])
+  const [roles, setRoles] = useState<{ id: string; description: string | null }[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [isOpen, setIsOpen] = useState(false)
@@ -48,7 +50,7 @@ export default function Configuracoes() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    role: 'user',
+    role: 'consultor',
     status: 'Ativo',
     password: '',
     confirmPassword: '',
@@ -58,8 +60,20 @@ export default function Configuracoes() {
   const { toast } = useToast()
 
   useEffect(() => {
+    fetchRoles()
     fetchProfiles()
   }, [])
+
+  async function fetchRoles() {
+    try {
+      const { data, error } = await supabase.from('roles').select('*')
+      if (!error && data) {
+        setRoles(data)
+      }
+    } catch (error) {
+      console.error('Erro ao carregar roles:', error)
+    }
+  }
 
   async function fetchProfiles() {
     try {
@@ -72,7 +86,11 @@ export default function Configuracoes() {
       if (error) throw error
       setProfiles(data || [])
     } catch (error: any) {
-      toast({ title: 'Erro ao carregar', description: error.message, variant: 'destructive' })
+      toast({
+        title: 'Erro ao carregar perfis',
+        description: error.message,
+        variant: 'destructive',
+      })
     } finally {
       setLoading(false)
     }
@@ -88,6 +106,17 @@ export default function Configuracoes() {
 
     if (!editingId && formData.password.length < 8) {
       toast({ title: 'A senha deve ter pelo menos 8 caracteres', variant: 'destructive' })
+      return
+    }
+
+    const roleExists = roles.length === 0 || roles.some((r) => r.id === formData.role)
+    if (!roleExists) {
+      toast({
+        title: 'Perfil inválido',
+        description:
+          'O perfil de acesso selecionado não existe no sistema. Por favor, selecione uma opção válida.',
+        variant: 'destructive',
+      })
       return
     }
 
@@ -141,7 +170,7 @@ export default function Configuracoes() {
     setFormData({
       name: profile.name,
       email: profile.email,
-      role: profile.role || 'user',
+      role: profile.role_id || profile.role || 'consultor',
       status: profile.status || 'Ativo',
       password: '',
       confirmPassword: '',
@@ -154,7 +183,7 @@ export default function Configuracoes() {
     setFormData({
       name: '',
       email: '',
-      role: 'user',
+      role: 'consultor',
       status: 'Ativo',
       password: '',
       confirmPassword: '',
@@ -220,9 +249,20 @@ export default function Configuracoes() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                      <SelectItem value="manager">Gerente</SelectItem>
-                      <SelectItem value="user">Usuário</SelectItem>
+                      {roles.length > 0 ? (
+                        roles.map((r) => (
+                          <SelectItem key={r.id} value={r.id}>
+                            {r.description || r.id}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <>
+                          <SelectItem value="admin">Admin (acesso total)</SelectItem>
+                          <SelectItem value="contador">Contador</SelectItem>
+                          <SelectItem value="gerente">Gerente</SelectItem>
+                          <SelectItem value="consultor">Consultor</SelectItem>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -325,7 +365,7 @@ export default function Configuracoes() {
                           variant="outline"
                           className="bg-blue-50 text-blue-700 border-blue-200 capitalize"
                         >
-                          {profile.role}
+                          {profile.role_id || profile.role || 'Sem Perfil'}
                         </Badge>
                       </TableCell>
                       <TableCell>

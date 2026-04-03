@@ -168,9 +168,9 @@ export function UserFormDialog({ open, onOpenChange, user, onSuccess }: Props) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                      <SelectItem value="gerente">Gerente</SelectItem>
+                      <SelectItem value="admin">Admin (acesso total)</SelectItem>
                       <SelectItem value="contador">Contador</SelectItem>
+                      <SelectItem value="gerente">Gerente</SelectItem>
                       <SelectItem value="consultor">Consultor</SelectItem>
                     </SelectContent>
                   </Select>
