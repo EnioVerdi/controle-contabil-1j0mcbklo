@@ -131,7 +131,7 @@ const InfoCard = ({
 export default function Timeline() {
   const [empresas, setEmpresas] = useState<Empresa[]>([])
   const [selectedEmpresaId, setSelectedEmpresaId] = useState<string>('')
-  const [selectedAno, setSelectedAno] = useState<string>('2024')
+  const [selectedAno, setSelectedAno] = useState<string>('2026')
   const [openCombobox, setOpenCombobox] = useState(false)
   const [loading, setLoading] = useState(true)
   const [loadingTimeline, setLoadingTimeline] = useState(false)
@@ -340,9 +340,9 @@ export default function Timeline() {
               <SelectValue placeholder="Ano" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="2024">2024</SelectItem>
-              <SelectItem value="2025">2025</SelectItem>
               <SelectItem value="2026">2026</SelectItem>
+              <SelectItem value="2027">2027</SelectItem>
+              <SelectItem value="2028">2028</SelectItem>
             </SelectContent>
           </Select>
         </div>

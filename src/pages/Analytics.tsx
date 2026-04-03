@@ -38,7 +38,7 @@ const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'
 export default function Analytics() {
   const [empresas, setEmpresas] = useState<any[]>([])
   const [timelines, setTimelines] = useState<any[]>([])
-  const [year, setYear] = useState('2024')
+  const [year, setYear] = useState('2026')
   const [loading, setLoading] = useState(true)
   const [searchUser, setSearchUser] = useState('Todos')
   const [searchCompany, setSearchCompany] = useState('')
@@ -166,7 +166,7 @@ export default function Analytics() {
             <SelectValue placeholder="Ano" />
           </SelectTrigger>
           <SelectContent>
-            {['2024', '2025', '2026'].map((y) => (
+            {['2026', '2027', '2028'].map((y) => (
               <SelectItem key={y} value={y}>
                 {y}
               </SelectItem>
