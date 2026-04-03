@@ -135,25 +135,6 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-6 space-y-4 mb-4">
-        {/* Promotional Card exactly matching the visual reference */}
-        <div className="relative overflow-hidden rounded-[28px] bg-white p-6 shadow-[0_10px_40px_rgba(0,0,0,0.06)] border border-gray-50 flex flex-col justify-between min-h-[180px]">
-          <div className="relative z-10 flex flex-col text-left items-start">
-            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-gray-900 text-white shadow-md">
-              <Activity className="h-5 w-5 fill-current" />
-            </div>
-            <p className="mb-5 text-[15px] pr-4 font-bold leading-snug text-gray-900 tracking-tight">
-              Construa riqueza futura com passos financeiros inteligentes hoje.
-            </p>
-            <Button className="w-fit rounded-full bg-gray-900 hover:bg-black text-white px-6 h-9 text-xs font-bold shadow-lg shadow-gray-900/20">
-              Começar Agora
-            </Button>
-          </div>
-          {/* Decorative Money Bag Emoji to match visual style */}
-          <div className="absolute -bottom-4 -right-4 text-7xl opacity-90 drop-shadow-2xl rotate-[-10deg] select-none pointer-events-none filter sepia-[0.2] hue-rotate-[90deg] saturate-[1.5]">
-            💰
-          </div>
-        </div>
-
         <Button
           variant="ghost"
           onClick={() => signOut()}
