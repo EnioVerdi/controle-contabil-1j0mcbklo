@@ -1,12 +1,4 @@
-import { useState } from 'react'
-import { ChevronDown, ChevronUp } from 'lucide-react'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { useState, useMemo } from 'react'
 import {
   Table,
   TableBody,
@@ -15,152 +7,164 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { cn } from '@/lib/utils'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
 
-type SortField = 'nome' | 'concluidas' | 'pendentes' | 'aberto' | 'progresso'
+interface EmpresaData {
+  id: string
+  nome: string
+  concluidas: number
+  aberto: number
+  pendentes: number
+  progresso: number
+}
 
-export function TopUsersTable({ data = [] }: { data?: any[] }) {
-  const [period, setPeriod] = useState('Mensal')
-  const [sortField, setSortField] = useState<SortField>('progresso')
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+interface TopUsersTableProps {
+  data: EmpresaData[]
+}
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortDir(sortDir === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortField(field)
-      setSortDir('desc')
-    }
-  }
+export function TopUsersTable({ data }: TopUsersTableProps) {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
-  const sortedData = [...data].sort((a, b) => {
-    const valA = a[sortField]
-    const valB = b[sortField]
-    if (valA < valB) return sortDir === 'asc' ? -1 : 1
-    if (valA > valB) return sortDir === 'asc' ? 1 : -1
-    return 0
-  })
-
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortField !== field) {
+  const filteredData = useMemo(() => {
+    return data.filter((emp) => {
+      const searchLower = searchTerm.toLowerCase()
       return (
-        <ChevronDown className="w-3 h-3 text-gray-300 group-hover:text-gray-400 transition-colors" />
+        emp.nome.toLowerCase().includes(searchLower) || emp.id.toLowerCase().includes(searchLower)
       )
-    }
-    return sortDir === 'asc' ? (
-      <ChevronUp className="w-3 h-3 text-gray-900" />
-    ) : (
-      <ChevronDown className="w-3 h-3 text-gray-900" />
-    )
-  }
+    })
+  }, [data, searchTerm])
+
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / itemsPerPage))
+
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    return filteredData.slice(startIndex, startIndex + itemsPerPage)
+  }, [filteredData, currentPage])
+
+  // Reset page when search changes
+  useMemo(() => {
+    setCurrentPage(1)
+  }, [searchTerm])
 
   return (
     <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_20px_rgba(0,0,0,0.02)] h-full flex flex-col">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h3 className="font-bold text-gray-900 text-lg">Desempenho por Empresa</h3>
-        <Select value={period} onValueChange={setPeriod}>
-          <SelectTrigger className="w-[110px] h-9 text-xs rounded-xl border-gray-100 bg-gray-50">
-            <SelectValue placeholder="Período" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Semanal">Semanal</SelectItem>
-            <SelectItem value="Mensal">Mensal</SelectItem>
-            <SelectItem value="Anual">Anual</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Buscar empresa ou código..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 bg-gray-50 border-gray-100 focus-visible:ring-1"
+          />
+        </div>
       </div>
 
       <div className="flex-1 overflow-auto">
         <Table>
           <TableHeader>
-            <TableRow className="border-b-0 hover:bg-transparent">
-              <TableHead
-                className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group"
-                onClick={() => handleSort('nome')}
-              >
-                <div className="flex items-center gap-1">
-                  Empresa <SortIcon field="nome" />
-                </div>
+            <TableRow className="border-gray-100 hover:bg-transparent">
+              <TableHead className="text-gray-500 font-medium h-11">Empresa</TableHead>
+              <TableHead className="text-gray-500 font-medium h-11 text-center">
+                Concluídas
               </TableHead>
-              <TableHead
-                className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group"
-                onClick={() => handleSort('concluidas')}
-              >
-                <div className="flex items-center gap-1">
-                  Concluídas <SortIcon field="concluidas" />
-                </div>
+              <TableHead className="text-gray-500 font-medium h-11 text-center">
+                Pendentes
               </TableHead>
-              <TableHead
-                className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group"
-                onClick={() => handleSort('pendentes')}
-              >
-                <div className="flex items-center gap-1">
-                  Pendentes <SortIcon field="pendentes" />
-                </div>
-              </TableHead>
-              <TableHead
-                className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group"
-                onClick={() => handleSort('aberto')}
-              >
-                <div className="flex items-center gap-1">
-                  Em Aberto <SortIcon field="aberto" />
-                </div>
-              </TableHead>
-              <TableHead
-                className="text-xs font-semibold text-gray-900 h-10 px-2 cursor-pointer group text-right"
-                onClick={() => handleSort('progresso')}
-              >
-                <div className="flex items-center justify-end gap-1">
-                  Progresso <SortIcon field="progresso" />
-                </div>
-              </TableHead>
+              <TableHead className="text-gray-500 font-medium h-11 text-center">Aberto</TableHead>
+              <TableHead className="text-gray-500 font-medium h-11">Progresso</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedData.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                  Nenhum dado encontrado
-                </TableCell>
-              </TableRow>
-            ) : (
-              sortedData.map((row: any) => (
-                <TableRow
-                  key={row.id}
-                  className="border-b border-gray-50/50 hover:bg-gray-50/50 transition-colors"
-                >
-                  <TableCell className="font-semibold text-sm text-gray-600 py-4 px-2">
-                    {row.nome}
+            {paginatedData.length > 0 ? (
+              paginatedData.map((emp) => (
+                <TableRow key={emp.id} className="border-gray-50 hover:bg-gray-50/50">
+                  <TableCell className="font-medium text-gray-900 py-4">
+                    <div className="flex flex-col">
+                      <span>{emp.nome}</span>
+                      <span className="text-xs text-gray-400 font-normal">Cód: {emp.id}</span>
+                    </div>
                   </TableCell>
-                  <TableCell className="font-bold text-sm text-green-600 py-4 px-2">
-                    {row.concluidas}
-                  </TableCell>
-                  <TableCell className="font-semibold text-sm text-gray-500 py-4 px-2">
-                    {row.pendentes}
-                  </TableCell>
-                  <TableCell className="font-semibold text-sm text-yellow-600 py-4 px-2">
-                    {row.aberto}
-                  </TableCell>
-                  <TableCell className="py-4 px-2 text-right">
-                    <span
-                      className={cn(
-                        'inline-flex items-center justify-center px-3 py-1 text-[11px] font-bold rounded-md',
-                        row.progresso >= 80
-                          ? 'bg-green-50 text-green-500'
-                          : row.progresso >= 50
-                            ? 'bg-blue-50 text-blue-500'
-                            : 'bg-yellow-50 text-yellow-600',
-                      )}
-                    >
-                      {row.progresso}%
-                    </span>
+                  <TableCell className="text-center text-gray-600 py-4">{emp.concluidas}</TableCell>
+                  <TableCell className="text-center text-gray-600 py-4">{emp.pendentes}</TableCell>
+                  <TableCell className="text-center text-gray-600 py-4">{emp.aberto}</TableCell>
+                  <TableCell className="py-4">
+                    <div className="flex items-center gap-3">
+                      <Progress value={emp.progresso} className="h-2 w-full bg-gray-100" />
+                      <span className="text-sm font-medium text-gray-600 w-9">
+                        {emp.progresso}%
+                      </span>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center text-gray-500">
+                  Nenhuma empresa encontrada.
+                </TableCell>
+              </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-50">
+          <p className="text-sm text-gray-500">
+            Mostrando {(currentPage - 1) * itemsPerPage + 1} até{' '}
+            {Math.min(currentPage * itemsPerPage, filteredData.length)} de {filteredData.length}{' '}
+            registros
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="h-8 w-8 p-0 border-gray-200"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span className="sr-only">Anterior</span>
+            </Button>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                .map((p, i, arr) => (
+                  <div key={p} className="flex items-center">
+                    {i > 0 && arr[i - 1] !== p - 1 && (
+                      <span className="px-2 text-gray-400 text-sm">...</span>
+                    )}
+                    <Button
+                      variant={currentPage === p ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setCurrentPage(p)}
+                      className={`h-8 w-8 p-0 ${currentPage === p ? '' : 'border-gray-200'}`}
+                    >
+                      {p}
+                    </Button>
+                  </div>
+                ))}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="h-8 w-8 p-0 border-gray-200"
+            >
+              <ChevronRight className="h-4 w-4" />
+              <span className="sr-only">Próximo</span>
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

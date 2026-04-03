@@ -72,6 +72,13 @@ export type Database = {
             referencedRelation: 'empresas'
             referencedColumns: ['id']
           },
+          {
+            foreignKeyName: 'empresa_observacoes_user_id_profiles_fk'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
         ]
       }
       empresa_timeline: {
@@ -457,6 +464,7 @@ export const Constants = {
 //   FOREIGN KEY empresa_observacoes_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
 //   PRIMARY KEY empresa_observacoes_pkey: PRIMARY KEY (id)
 //   FOREIGN KEY empresa_observacoes_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
+//   FOREIGN KEY empresa_observacoes_user_id_profiles_fk: FOREIGN KEY (user_id) REFERENCES profiles(id) ON DELETE CASCADE
 // Table: empresa_timeline
 //   UNIQUE empresa_timeline_empresa_id_ano_mes_key: UNIQUE (empresa_id, ano, mes)
 //   FOREIGN KEY empresa_timeline_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
