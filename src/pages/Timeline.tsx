@@ -36,12 +36,18 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import { fetchEmpresas } from '@/services/empresas'
-import { fetchTimeline, upsertTimelineMonth } from '@/services/timeline'
+import {
+  fetchTimeline,
+  upsertTimelineMonth,
+  fetchObservacoes,
+  addObservacao,
+} from '@/services/timeline'
 import { Empresa } from '@/types/empresa'
-import { StatusTimeline } from '@/types/timeline'
+import { StatusTimeline, ObservacaoTimeline } from '@/types/timeline'
 import { usePermissions } from '@/hooks/use-permissions'
 
 const MONTHS = [
@@ -132,6 +138,9 @@ export default function Timeline() {
   const [currentMonths, setCurrentMonths] = useState<StatusTimeline[]>(
     Array(12).fill('nao_iniciado'),
   )
+  const [observacoes, setObservacoes] = useState<ObservacaoTimeline[]>([])
+  const [novaObservacao, setNovaObservacao] = useState('')
+  const [savingObs, setSavingObs] = useState(false)
   const { toast } = useToast()
   const { can } = usePermissions()
 
@@ -176,8 +185,13 @@ export default function Timeline() {
           }
         })
         setCurrentMonths(newMonths)
+
+        const obsData = await fetchObservacoes(selectedEmpresaId, parseInt(selectedAno))
+        if (isMounted) {
+          setObservacoes(obsData)
+        }
       } catch (error) {
-        toast({ title: 'Erro ao carregar timeline', variant: 'destructive' })
+        toast({ title: 'Erro ao carregar dados da timeline', variant: 'destructive' })
       } finally {
         if (isMounted) setLoadingTimeline(false)
       }
@@ -227,6 +241,25 @@ export default function Timeline() {
     if (val === true) return 'Sim'
     if (val === false) return 'Não'
     return 'Não informado'
+  }
+
+  const handleSaveObservacao = async () => {
+    if (!novaObservacao.trim()) return
+    setSavingObs(true)
+    try {
+      const newObs = await addObservacao(selectedEmpresaId, parseInt(selectedAno), novaObservacao)
+      setObservacoes([newObs, ...observacoes])
+      setNovaObservacao('')
+      toast({ title: 'Observação salva com sucesso!' })
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao salvar observação',
+        description: error.message,
+        variant: 'destructive',
+      })
+    } finally {
+      setSavingObs(false)
+    }
   }
 
   if (loading) {
@@ -451,6 +484,70 @@ export default function Timeline() {
                 colorClass="bg-cyan-50 text-cyan-600"
               />
             </div>
+          </div>
+
+          <div className="mt-8">
+            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 px-1">
+              Observações ({selectedAno})
+            </h2>
+            <Card className="bg-white shadow-sm border-gray-100">
+              <CardContent className="p-4 sm:p-6 space-y-6">
+                <div className="space-y-3">
+                  <Textarea
+                    placeholder="Adicione suas observações sobre a empresa neste período..."
+                    className="min-h-[100px] resize-y bg-gray-50/50 focus:bg-white"
+                    value={novaObservacao}
+                    onChange={(e) => setNovaObservacao(e.target.value)}
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      onClick={handleSaveObservacao}
+                      disabled={savingObs || !novaObservacao.trim() || !can('edit_timeline')}
+                    >
+                      {savingObs && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      Salvar Observação
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-gray-700 border-b border-gray-100 pb-2">
+                    Histórico de Observações
+                  </h3>
+                  {observacoes.length === 0 ? (
+                    <p className="text-sm text-gray-500 italic">
+                      Nenhuma observação registrada para este ano.
+                    </p>
+                  ) : (
+                    <div className="space-y-4">
+                      {observacoes.map((obs) => (
+                        <div
+                          key={obs.id}
+                          className="bg-gray-50 p-4 rounded-lg border border-gray-100"
+                        >
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-2">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
+                                {obs.profiles?.name?.charAt(0).toUpperCase() || 'U'}
+                              </div>
+                              <span className="text-sm font-medium text-gray-900">
+                                {obs.profiles?.name || 'Usuário Desconhecido'}
+                              </span>
+                            </div>
+                            <span className="text-xs text-gray-500 font-mono bg-white px-2 py-1 rounded border border-gray-200">
+                              {new Date(obs.created_at).toLocaleString('pt-BR')}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-700 whitespace-pre-wrap ml-10">
+                            {obs.observacao}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       ) : (
