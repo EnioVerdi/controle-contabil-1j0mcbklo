@@ -21,16 +21,20 @@ export function ProtectedRoute() {
 
   const path = location.pathname
 
+  if (path.startsWith('/configuracoes') && role !== 'admin') {
+    return <Navigate to="/dashboard" replace />
+  }
+
   if (role === 'gerente') {
     if (!path.startsWith('/dashboard') && !path.startsWith('/analytics')) {
       return <Navigate to="/dashboard" replace />
     }
   } else if (role === 'contador') {
-    if (path.startsWith('/dashboard') || path.startsWith('/configuracoes')) {
+    if (path.startsWith('/dashboard')) {
       return <Navigate to="/" replace />
     }
   } else if (role === 'consultor') {
-    if (path.startsWith('/dashboard') || path.startsWith('/configuracoes')) {
+    if (path.startsWith('/dashboard')) {
       return <Navigate to="/" replace />
     }
   }

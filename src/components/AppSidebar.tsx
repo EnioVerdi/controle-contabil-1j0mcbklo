@@ -50,7 +50,9 @@ export function AppSidebar() {
 
   const visibleNavItems = navItems.filter((item) => {
     if (role === 'admin') return true
-    const defaultTabs = ['/dashboard', '/timeline', '/analytics', '/configuracoes', '/']
+    if (item.path === '/configuracoes') return false
+
+    const defaultTabs = ['/dashboard', '/timeline', '/analytics', '/']
     if (defaultTabs.includes(item.path)) return true
 
     if (role === 'contador' || role === 'consultor') {
