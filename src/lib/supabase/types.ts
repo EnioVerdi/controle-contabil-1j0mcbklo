@@ -39,6 +39,41 @@ export type Database = {
         }
         Relationships: []
       }
+      empresa_observacoes: {
+        Row: {
+          ano: number
+          created_at: string
+          empresa_id: string
+          id: string
+          observacao: string
+          user_id: string
+        }
+        Insert: {
+          ano: number
+          created_at?: string
+          empresa_id: string
+          id?: string
+          observacao: string
+          user_id: string
+        }
+        Update: {
+          ano?: number
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          observacao?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'empresa_observacoes_empresa_id_fkey'
+            columns: ['empresa_id']
+            isOneToOne: false
+            referencedRelation: 'empresas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       empresa_timeline: {
         Row: {
           ano: number
@@ -363,6 +398,13 @@ export const Constants = {
 //   entity_id: uuid (nullable)
 //   details: jsonb (nullable)
 //   created_at: timestamp with time zone (not null, default: now())
+// Table: empresa_observacoes
+//   id: uuid (not null, default: gen_random_uuid())
+//   empresa_id: text (not null)
+//   ano: integer (not null)
+//   user_id: uuid (not null)
+//   observacao: text (not null)
+//   created_at: timestamp with time zone (not null, default: now())
 // Table: empresa_timeline
 //   id: uuid (not null, default: gen_random_uuid())
 //   empresa_id: text (not null)
@@ -411,6 +453,10 @@ export const Constants = {
 // Table: audit_logs
 //   FOREIGN KEY audit_logs_actor_id_fkey: FOREIGN KEY (actor_id) REFERENCES auth.users(id) ON DELETE SET NULL
 //   PRIMARY KEY audit_logs_pkey: PRIMARY KEY (id)
+// Table: empresa_observacoes
+//   FOREIGN KEY empresa_observacoes_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
+//   PRIMARY KEY empresa_observacoes_pkey: PRIMARY KEY (id)
+//   FOREIGN KEY empresa_observacoes_user_id_fkey: FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
 // Table: empresa_timeline
 //   UNIQUE empresa_timeline_empresa_id_ano_mes_key: UNIQUE (empresa_id, ano, mes)
 //   FOREIGN KEY empresa_timeline_empresa_id_fkey: FOREIGN KEY (empresa_id) REFERENCES empresas(id) ON DELETE CASCADE
@@ -434,6 +480,15 @@ export const Constants = {
 //     WITH CHECK: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND ((profiles.role_id = 'admin'::text) OR (profiles.role = 'admin'::text)))))
 //   Policy "Admins can view audit logs" (SELECT, PERMISSIVE) roles={authenticated}
 //     USING: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND ((profiles.role_id = 'admin'::text) OR (profiles.role = 'admin'::text)))))
+// Table: empresa_observacoes
+//   Policy "role_delete_observacoes" (DELETE, PERMISSIVE) roles={authenticated}
+//     USING: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND (profiles.role_id = ANY (ARRAY['admin'::text, 'contador'::text])))))
+//   Policy "role_insert_observacoes" (INSERT, PERMISSIVE) roles={authenticated}
+//     WITH CHECK: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND (profiles.role_id = ANY (ARRAY['admin'::text, 'contador'::text])))))
+//   Policy "role_select_observacoes" (SELECT, PERMISSIVE) roles={authenticated}
+//     USING: true
+//   Policy "role_update_observacoes" (UPDATE, PERMISSIVE) roles={authenticated}
+//     USING: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND (profiles.role_id = ANY (ARRAY['admin'::text, 'contador'::text])))))
 // Table: empresa_timeline
 //   Policy "role_delete_timeline" (DELETE, PERMISSIVE) roles={authenticated}
 //     USING: (EXISTS ( SELECT 1    FROM profiles   WHERE ((profiles.id = auth.uid()) AND (profiles.role_id = ANY (ARRAY['admin'::text, 'contador'::text])))))
@@ -507,6 +562,8 @@ export const Constants = {
 //   set_profiles_updated_at: CREATE TRIGGER set_profiles_updated_at BEFORE UPDATE ON public.profiles FOR EACH ROW EXECUTE FUNCTION set_current_timestamp_updated_at()
 
 // --- INDEXES ---
+// Table: empresa_observacoes
+//   CREATE INDEX empresa_observacoes_empresa_ano_idx ON public.empresa_observacoes USING btree (empresa_id, ano)
 // Table: empresa_timeline
 //   CREATE UNIQUE INDEX empresa_timeline_empresa_id_ano_mes_key ON public.empresa_timeline USING btree (empresa_id, ano, mes)
 // Table: profiles
