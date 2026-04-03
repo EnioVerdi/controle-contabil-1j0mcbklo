@@ -466,6 +466,30 @@ export const Constants = {
 //     WITH CHECK: true
 
 // --- DATABASE FUNCTIONS ---
+// FUNCTION handle_new_user()
+//   CREATE OR REPLACE FUNCTION public.handle_new_user()
+//    RETURNS trigger
+//    LANGUAGE plpgsql
+//    SECURITY DEFINER
+//   AS $function$
+//   BEGIN
+//     INSERT INTO public.profiles (id, user_id, email, name, role, status)
+//     VALUES (
+//       NEW.id,
+//       NEW.id,
+//       NEW.email,
+//       COALESCE(NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
+//       'user',
+//       'Ativo'
+//     )
+//     ON CONFLICT (id) DO UPDATE SET
+//       user_id = EXCLUDED.user_id,
+//       email = EXCLUDED.email,
+//       name = EXCLUDED.name;
+//     RETURN NEW;
+//   END;
+//   $function$
+//
 // FUNCTION set_current_timestamp_updated_at()
 //   CREATE OR REPLACE FUNCTION public.set_current_timestamp_updated_at()
 //    RETURNS trigger

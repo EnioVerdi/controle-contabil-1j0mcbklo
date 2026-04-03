@@ -27,18 +27,16 @@ import { usePermissions } from '@/hooks/use-permissions'
 import { useAuth } from '@/hooks/use-auth'
 
 const navItems = [
-  { name: 'Empresas', path: '/', icon: LayoutDashboard },
-  { name: 'Painel', path: '/dashboard', icon: Presentation },
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
   { name: 'Timeline', path: '/timeline', icon: BarChart3 },
-  { name: 'Análises', path: '/analytics', icon: LineChart },
+  { name: 'Analytics', path: '/analytics', icon: LineChart },
+  { name: 'Configurações', path: '/configuracoes', icon: Settings },
+  { name: 'Empresas', path: '/', icon: Presentation },
   { name: 'Pagamentos', path: '/pagamentos', icon: CreditCard, badge: '3' },
   { name: 'Usuários', path: '/usuarios', icon: Users },
 ]
 
-const supportItems = [
-  { name: 'Ajuda', path: '/ajuda', icon: HelpCircle },
-  { name: 'Configurações', path: '/configuracoes', icon: Settings },
-]
+const supportItems = [{ name: 'Ajuda', path: '/ajuda', icon: HelpCircle }]
 
 export function AppSidebar() {
   const location = useLocation()
@@ -52,19 +50,16 @@ export function AppSidebar() {
 
   const visibleNavItems = navItems.filter((item) => {
     if (role === 'admin') return true
-    if (role === 'gerente') return ['/dashboard', '/analytics'].includes(item.path)
-    if (role === 'contador')
-      return ['/', '/timeline', '/analytics', '/pagamentos'].includes(item.path)
-    if (role === 'consultor')
-      return ['/', '/timeline', '/analytics', '/pagamentos'].includes(item.path)
+    const defaultTabs = ['/dashboard', '/timeline', '/analytics', '/configuracoes', '/']
+    if (defaultTabs.includes(item.path)) return true
+
+    if (role === 'contador' || role === 'consultor') {
+      return ['/pagamentos'].includes(item.path) || defaultTabs.includes(item.path)
+    }
     return false
   })
 
-  const visibleSupportItems = supportItems.filter((item) => {
-    if (role === 'admin') return true
-    if (item.path === '/configuracoes') return false
-    return true
-  })
+  const visibleSupportItems = supportItems.filter(() => true)
 
   return (
     <Sidebar className="border-r-0 bg-white">

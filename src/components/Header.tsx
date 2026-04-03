@@ -1,11 +1,33 @@
-import { Search, Bell, FileText } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Search, Bell, FileText, User } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { useSearch } from '@/context/SearchContext'
+import { useAuth } from '@/hooks/use-auth'
+import { supabase } from '@/lib/supabase/client'
 
 export function Header() {
   const { searchTerm, setSearchTerm } = useSearch()
+  const { user } = useAuth()
+  const [profile, setProfile] = useState<{ name: string; role: string } | null>(null)
+
+  useEffect(() => {
+    if (user) {
+      supabase
+        .from('profiles')
+        .select('name, role')
+        .eq('user_id', user.id)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) setProfile(data as any)
+        })
+    }
+  }, [user])
+
+  const userName =
+    profile?.name || user?.user_metadata?.name || user?.email?.split('@')[0] || 'Usuário'
+  const userRole = profile?.role || user?.user_metadata?.role || 'Usuário'
 
   return (
     <header className="sticky top-0 z-30 flex h-24 items-center gap-4 bg-transparent px-8">
@@ -41,17 +63,25 @@ export function Header() {
         </Button>
 
         <div className="hidden flex-col items-end sm:flex ml-2">
-          <span className="text-sm font-bold text-gray-900 leading-none tracking-tight">
-            John Andre
+          <span className="text-sm font-bold text-gray-900 leading-none tracking-tight truncate max-w-[150px]">
+            {userName}
           </span>
-          <span className="text-[11px] font-semibold text-gray-400 mt-1">Gerente de Negócios</span>
+          <span className="text-[11px] font-semibold text-gray-400 mt-1 capitalize">
+            {userRole}
+          </span>
         </div>
-        <div className="h-11 w-11 rounded-full overflow-hidden border-2 border-white shadow-md ml-1 shrink-0">
-          <img
-            src="https://img.usecurling.com/ppl/thumbnail?gender=male&seed=1"
-            alt="John Andre"
-            className="w-full h-full object-cover"
-          />
+        <div className="h-11 w-11 rounded-full overflow-hidden border-2 border-white shadow-md ml-1 shrink-0 bg-gray-100 flex items-center justify-center">
+          {user?.user_metadata?.avatar_url ? (
+            <img
+              src={user.user_metadata.avatar_url}
+              alt={userName}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-gray-900 text-white font-bold text-sm">
+              {userName.substring(0, 2).toUpperCase()}
+            </div>
+          )}
         </div>
       </div>
     </header>
