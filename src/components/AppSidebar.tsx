@@ -4,12 +4,10 @@ import {
   Presentation,
   BarChart3,
   LineChart,
-  CreditCard,
   HelpCircle,
   Settings,
   LogOut,
   Activity,
-  Users,
 } from 'lucide-react'
 import {
   Sidebar,
@@ -28,12 +26,10 @@ import { useAuth } from '@/hooks/use-auth'
 
 const navItems = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Timeline', path: '/timeline', icon: BarChart3 },
-  { name: 'Analytics', path: '/analytics', icon: LineChart },
-  { name: 'Configurações', path: '/configuracoes', icon: Settings },
   { name: 'Empresas', path: '/', icon: Presentation },
-  { name: 'Pagamentos', path: '/pagamentos', icon: CreditCard, badge: '3' },
-  { name: 'Usuários', path: '/usuarios', icon: Users },
+  { name: 'Timeline', path: '/timeline', icon: BarChart3 },
+  { name: 'Análises', path: '/analytics', icon: LineChart },
+  { name: 'Configurações', path: '/configuracoes', icon: Settings },
 ]
 
 const supportItems = [{ name: 'Ajuda', path: '/ajuda', icon: HelpCircle }]
@@ -56,7 +52,7 @@ export function AppSidebar() {
     if (defaultTabs.includes(item.path)) return true
 
     if (role === 'contador' || role === 'consultor') {
-      return ['/pagamentos'].includes(item.path) || defaultTabs.includes(item.path)
+      return defaultTabs.includes(item.path)
     }
     return false
   })

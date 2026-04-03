@@ -13,8 +13,6 @@ import Dashboard from './pages/Dashboard'
 import EmpresaDetails from './pages/EmpresaDetails'
 import Timeline from './pages/Timeline'
 import Analytics from './pages/Analytics'
-import Pagamentos from './pages/Pagamentos'
-import Usuarios from './pages/Usuarios'
 import Ajuda from './pages/Ajuda'
 import Configuracoes from './pages/Configuracoes'
 import NotFound from './pages/NotFound'
@@ -35,8 +33,6 @@ const App = () => (
                 <Route path="/empresas/:id" element={<EmpresaDetails />} />
                 <Route path="/timeline" element={<Timeline />} />
                 <Route path="/analytics" element={<Analytics />} />
-                <Route path="/pagamentos" element={<Pagamentos />} />
-                <Route path="/usuarios" element={<Usuarios />} />
                 <Route path="/ajuda" element={<Ajuda />} />
                 <Route path="/configuracoes" element={<Configuracoes />} />
               </Route>
