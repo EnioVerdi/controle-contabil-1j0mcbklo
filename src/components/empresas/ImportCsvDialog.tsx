@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { Empresa } from '@/types/empresa'
 import { useToast } from '@/hooks/use-toast'
 import { importEmpresas } from '@/services/empresas'
+import { supabase } from '@/lib/supabase/client'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -148,6 +149,15 @@ export function ImportCsvDialog({
 
     try {
       setIsLoading(true)
+
+      // Validação de autenticação antes de enviar
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('Usuário não autenticado. Faça login novamente para importar (401).')
+      }
+
       await importEmpresas(preview, duplicateAction)
 
       toast({

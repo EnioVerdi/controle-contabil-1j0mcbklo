@@ -38,31 +38,30 @@ export async function importEmpresas(
   const {
     data: { session },
   } = await supabase.auth.getSession()
+
   if (!session) {
     throw new Error('Sessão expirada ou usuário não autenticado. (401)')
   }
 
-  // Verifica permissão específica para importação (apenas admin tem acesso total '*')
-  await validatePermission('import_empresas')
-
-  const dbRecords = empresas.map((empresa) => ({
-    id: empresa.id,
-    nome: empresa.nome,
-    atividade: empresa.atividade,
-    regime_tributario: empresa.regimeTributario,
-    fechamento: empresa.fechamento,
-    responsavel: empresa.responsavel || 'A Definir',
-    fiscal: 'Pendente',
-  }))
-
-  const { error } = await supabase.from('empresas').upsert(dbRecords, {
-    onConflict: 'id',
-    ignoreDuplicates: duplicateAction === 'skip',
+  // Chama a Edge Function import-csv para processamento seguro e validado
+  const { data, error } = await supabase.functions.invoke('import-csv', {
+    body: { empresas, duplicateAction },
   })
 
   if (error) {
-    console.error('Erro ao fazer upsert na importação:', error)
-    throw new Error('Erro ao salvar os dados no banco. (500)')
+    console.error('Erro na chamada da Edge Function (import-csv):', error)
+    if (error.message?.includes('Not Found') || error.name === 'FunctionsHttpError') {
+      throw new Error(
+        'Serviço de importação não encontrado (404). A Edge Function "import-csv" não está acessível.',
+      )
+    }
+    throw new Error(
+      `Falha na requisição. Verifique sua autenticação ou permissões (400/401/403). Detalhe: ${error.message}`,
+    )
+  }
+
+  if (data?.error) {
+    throw new Error(data.error)
   }
 }
 
