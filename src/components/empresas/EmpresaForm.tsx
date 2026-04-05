@@ -1,115 +1,257 @@
-import { useMemo } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { useState, useEffect } from 'react'
 import { Empresa } from '@/types/empresa'
 import { Button } from '@/components/ui/button'
-import { Form } from '@/components/ui/form'
-import { EmpresaFormFields } from './EmpresaFormFields'
-
-const baseSchema = z.object({
-  id: z.string().min(1, 'Código é obrigatório'),
-  nome: z.string().min(1, 'Nome é obrigatório'),
-  atividade: z.string().min(1, 'Atividade é obrigatória'),
-  regimeTributario: z.string().optional(),
-  responsavel: z.string().min(1, 'Responsável é obrigatório'),
-  novoResponsavel: z.string().optional(),
-  fechamento: z.string().optional(),
-  fiscal: z.boolean(),
-  regimeFolha: z.string().optional(),
-  contabilizacaoFolha: z.string().optional(),
-  depreciacao: z.boolean().default(false),
-  extratos: z.boolean().default(false),
-  parcelamentos: z.boolean().default(false),
-  distribuicaoLucro: z.boolean().default(false),
-  receitaFinanceira: z.boolean().default(false),
-  periodoVerificado: z.string().optional(),
-  ultimaVerificacao: z.string().optional(),
-  observacoes: z.string().optional(),
-})
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface EmpresaFormProps {
   empresa?: Empresa | null
   empresas: Empresa[]
-  onSubmit: (data: Empresa) => void
+  onSubmit: (data: Empresa) => Promise<void>
   onCancel: () => void
 }
 
+const defaultEmpresa: Partial<Empresa> = {
+  id: '',
+  nome: '',
+  responsavel: '',
+  atividade: '',
+  fiscal: 'Pendente',
+  regimeTributario: '',
+  fechamento: '',
+  observacoes: '',
+  depreciacao: false,
+  extratos: false,
+  parcelamentos: false,
+  distribuicaoLucro: false,
+  receitaFinanceira: false,
+  logo: '',
+  ultimaVerificacao: '',
+  novoResponsavel: '',
+  regimeFolha: '',
+  contabilizacaoFolha: '',
+  periodoVerificado: '',
+}
+
 export function EmpresaForm({ empresa, empresas, onSubmit, onCancel }: EmpresaFormProps) {
-  const formSchema = useMemo(() => {
-    return baseSchema.refine(
-      (data) => {
-        if (empresa?.id && data.id === empresa.id) return true
-        return !empresas.some((e) => e.id === data.id)
-      },
-      { message: 'Este código já está em uso', path: ['id'] },
-    )
-  }, [empresa, empresas])
+  const [formData, setFormData] = useState<Partial<Empresa>>(empresa || defaultEmpresa)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const form = useForm<z.infer<typeof baseSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      id: empresa?.id || '',
-      nome: empresa?.nome || '',
-      atividade: empresa?.atividade || '',
-      regimeTributario: empresa?.regimeTributario || '',
-      responsavel: empresa?.responsavel || '',
-      novoResponsavel: empresa?.novoResponsavel || '',
-      fechamento: empresa?.fechamento || '',
-      fiscal: empresa?.fiscal === 'Verificada',
-      regimeFolha: empresa?.regimeFolha || '',
-      contabilizacaoFolha: empresa?.contabilizacaoFolha || '',
-      depreciacao: empresa?.depreciacao || false,
-      extratos: empresa?.extratos || false,
-      parcelamentos: empresa?.parcelamentos || false,
-      distribuicaoLucro: empresa?.distribuicaoLucro || false,
-      receitaFinanceira: empresa?.receitaFinanceira || false,
-      periodoVerificado: empresa?.periodoVerificado || '',
-      ultimaVerificacao: empresa?.ultimaVerificacao || '',
-      observacoes: empresa?.observacoes || '',
-    },
-  })
+  const isEditing = !!empresa
 
-  const handleSubmit = (values: z.infer<typeof baseSchema>) => {
-    onSubmit({
-      ...(empresa || {}),
-      id: values.id,
-      nome: values.nome,
-      logo:
-        empresa?.logo ||
-        `https://img.usecurling.com/i?q=${encodeURIComponent(
-          values.atividade || 'business',
-        )}&shape=fill&color=blue`,
-      responsavel: values.responsavel,
-      atividade: values.atividade,
-      fechamento: values.fechamento || '',
-      fiscal: values.fiscal ? 'Verificada' : 'Pendente',
-      ultimaVerificacao: values.ultimaVerificacao || new Date().toLocaleDateString('pt-BR'),
-      regimeTributario: values.regimeTributario,
-      novoResponsavel: values.novoResponsavel,
-      regimeFolha: values.regimeFolha,
-      contabilizacaoFolha: values.contabilizacaoFolha,
-      depreciacao: values.depreciacao,
-      extratos: values.extratos,
-      parcelamentos: values.parcelamentos,
-      distribuicaoLucro: values.distribuicaoLucro,
-      receitaFinanceira: values.receitaFinanceira,
-      periodoVerificado: values.periodoVerificado,
-      observacoes: values.observacoes,
-    } as Empresa)
+  useEffect(() => {
+    if (empresa) {
+      setFormData(empresa)
+    } else {
+      setFormData(defaultEmpresa)
+    }
+  }, [empresa])
+
+  const handleChange = (field: keyof Empresa, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+
+    if (!formData.id || !formData.nome || !formData.responsavel || !formData.atividade) {
+      setError('Preencha todos os campos obrigatórios (Código, Nome, Responsável, Atividade).')
+      return
+    }
+
+    // Usamos o array 'empresas' localmente em vez de requisições HEAD na API para checar duplicidade
+    if (!isEditing && empresas.some((emp) => emp.id === formData.id)) {
+      setError(`Já existe uma empresa cadastrada com o código ${formData.id}.`)
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      await onSubmit(formData as Empresa)
+    } catch (err: any) {
+      setError(err.message || 'Erro ao salvar empresa.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <EmpresaFormFields form={form} />
-        <div className="flex justify-end gap-3 pt-4 border-t">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancelar
-          </Button>
-          <Button type="submit">Salvar</Button>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg">{error}</div>}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="id">
+            Código <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="id"
+            value={formData.id}
+            onChange={(e) => handleChange('id', e.target.value)}
+            disabled={isEditing}
+            placeholder="Ex: 1234"
+          />
         </div>
-      </form>
-    </Form>
+        <div className="space-y-2">
+          <Label htmlFor="nome">
+            Nome da Empresa <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="nome"
+            value={formData.nome}
+            onChange={(e) => handleChange('nome', e.target.value)}
+            placeholder="Razão Social"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="responsavel">
+            Responsável <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="responsavel"
+            value={formData.responsavel}
+            onChange={(e) => handleChange('responsavel', e.target.value)}
+            placeholder="Nome do Responsável"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="atividade">
+            Atividade <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="atividade"
+            value={formData.atividade}
+            onChange={(e) => handleChange('atividade', e.target.value)}
+            placeholder="Ramo de Atividade"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="regimeTributario">Regime Tributário</Label>
+          <Select
+            value={formData.regimeTributario}
+            onValueChange={(value) => handleChange('regimeTributario', value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione o regime" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Simples Nacional">Simples Nacional</SelectItem>
+              <SelectItem value="Lucro Presumido">Lucro Presumido</SelectItem>
+              <SelectItem value="Lucro Real">Lucro Real</SelectItem>
+              <SelectItem value="MEI">MEI</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="fechamento">Fechamento</Label>
+          <Input
+            id="fechamento"
+            value={formData.fechamento}
+            onChange={(e) => handleChange('fechamento', e.target.value)}
+            placeholder="Ex: Dia 5"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="fiscal">Status Fiscal</Label>
+          <Select value={formData.fiscal} onValueChange={(value) => handleChange('fiscal', value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Pendente">Pendente</SelectItem>
+              <SelectItem value="Verificada">Verificada</SelectItem>
+              <SelectItem value="Em Análise">Em Análise</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="space-y-2 border-t pt-4">
+        <Label>Opções Adicionais</Label>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="depreciacao"
+              checked={formData.depreciacao}
+              onCheckedChange={(c) => handleChange('depreciacao', !!c)}
+            />
+            <Label htmlFor="depreciacao" className="font-normal cursor-pointer">
+              Depreciação
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="extratos"
+              checked={formData.extratos}
+              onCheckedChange={(c) => handleChange('extratos', !!c)}
+            />
+            <Label htmlFor="extratos" className="font-normal cursor-pointer">
+              Extratos
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="parcelamentos"
+              checked={formData.parcelamentos}
+              onCheckedChange={(c) => handleChange('parcelamentos', !!c)}
+            />
+            <Label htmlFor="parcelamentos" className="font-normal cursor-pointer">
+              Parcelamentos
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="distribuicaoLucro"
+              checked={formData.distribuicaoLucro}
+              onCheckedChange={(c) => handleChange('distribuicaoLucro', !!c)}
+            />
+            <Label htmlFor="distribuicaoLucro" className="font-normal cursor-pointer">
+              Distribuição de Lucro
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="receitaFinanceira"
+              checked={formData.receitaFinanceira}
+              onCheckedChange={(c) => handleChange('receitaFinanceira', !!c)}
+            />
+            <Label htmlFor="receitaFinanceira" className="font-normal cursor-pointer">
+              Receita Financeira
+            </Label>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-2 border-t pt-4">
+        <Label htmlFor="observacoes">Observações</Label>
+        <Textarea
+          id="observacoes"
+          value={formData.observacoes}
+          onChange={(e) => handleChange('observacoes', e.target.value)}
+          placeholder="Anotações sobre a empresa..."
+          rows={3}
+        />
+      </div>
+
+      <div className="flex justify-end gap-3 pt-4">
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+          Cancelar
+        </Button>
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? 'Salvando...' : 'Salvar Empresa'}
+        </Button>
+      </div>
+    </form>
   )
 }
