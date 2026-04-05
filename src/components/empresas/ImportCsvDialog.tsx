@@ -76,10 +76,17 @@ export function ImportCsvDialog({
     const idxNome = headers.findIndex((h) => h === 'nome')
     const idxAtividade = headers.findIndex((h) => h === 'atividade')
     const idxRegime = headers.findIndex((h) => h.includes('regime') && h.includes('tributario'))
+    const idxFechamento = headers.findIndex((h) => h === 'fechamento')
 
-    if (idxId === -1 || idxNome === -1 || idxAtividade === -1 || idxRegime === -1) {
+    if (
+      idxId === -1 ||
+      idxNome === -1 ||
+      idxAtividade === -1 ||
+      idxRegime === -1 ||
+      idxFechamento === -1
+    ) {
       throw new Error(
-        'Colunas inválidas. O CSV deve conter: Código, Nome, Atividade, Regime Tributário',
+        'Colunas inválidas. O CSV deve conter: Código, Nome, Atividade, Regime Tributário, Fechamento',
       )
     }
 
@@ -88,7 +95,7 @@ export function ImportCsvDialog({
       const columns = lines[i]
         .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
         .map((c) => c.trim().replace(/^"|"$/g, ''))
-      if (columns.length < 4) continue
+      if (columns.length < 5) continue
 
       if (!columns[idxId]) continue
 
@@ -97,6 +104,7 @@ export function ImportCsvDialog({
         nome: columns[idxNome] || 'Sem Nome',
         atividade: columns[idxAtividade] || 'Não Informada',
         regimeTributario: columns[idxRegime] || '',
+        fechamento: columns[idxFechamento] || '',
       })
     }
     return result
@@ -155,7 +163,7 @@ export function ImportCsvDialog({
           <DialogTitle>Importar Empresas via CSV</DialogTitle>
           <DialogDescription>
             Faça upload de um arquivo CSV contendo as colunas:{' '}
-            <strong>Código, Nome, Atividade, Regime Tributário</strong>.
+            <strong>Código, Nome, Atividade, Regime Tributário, Fechamento</strong>.
           </DialogDescription>
         </DialogHeader>
 
@@ -238,6 +246,7 @@ export function ImportCsvDialog({
                         <TableHead>Nome</TableHead>
                         <TableHead>Atividade</TableHead>
                         <TableHead>Regime Trib.</TableHead>
+                        <TableHead>Fechamento</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -257,6 +266,7 @@ export function ImportCsvDialog({
                           <TableCell className="truncate max-w-[150px]">{row.nome}</TableCell>
                           <TableCell className="truncate max-w-[150px]">{row.atividade}</TableCell>
                           <TableCell>{row.regimeTributario}</TableCell>
+                          <TableCell>{row.fechamento}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

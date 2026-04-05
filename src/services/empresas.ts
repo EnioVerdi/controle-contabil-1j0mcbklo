@@ -33,6 +33,7 @@ export async function importEmpresas(
     nome: empresa.nome,
     atividade: empresa.atividade,
     regime_tributario: empresa.regimeTributario,
+    fechamento: empresa.fechamento,
     responsavel: empresa.responsavel || 'A Definir',
     fiscal: 'Pendente',
   }))
