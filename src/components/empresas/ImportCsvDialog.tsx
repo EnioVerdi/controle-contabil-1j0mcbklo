@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/table'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useToast } from '@/hooks/use-toast'
+import { useAuth } from '@/hooks/use-auth'
 import { importEmpresas } from '@/services/empresas'
 import { Empresa } from '@/types/empresa'
 import { UploadCloud, AlertTriangle, FileText, CheckCircle2 } from 'lucide-react'
@@ -45,6 +46,7 @@ export function ImportCsvDialog({
   const [isLoading, setIsLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
+  const { user, session } = useAuth()
 
   const resetState = () => {
     setFile(null)
@@ -134,6 +136,16 @@ export function ImportCsvDialog({
   }
 
   const handleImport = async () => {
+    if (!user || !session) {
+      toast({
+        title: 'Erro de Autenticação',
+        description:
+          'Você precisa estar logado para realizar a importação. Sua sessão pode ter expirado.',
+        variant: 'destructive',
+      })
+      return
+    }
+
     if (preview.length === 0) return
 
     setIsLoading(true)
@@ -146,9 +158,24 @@ export function ImportCsvDialog({
       onSuccess()
       handleOpenChange(false)
     } catch (error: any) {
+      let errorMessage = error.message || 'Ocorreu um erro inesperado.'
+
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('Not Found')) {
+        errorMessage =
+          'Serviço de validação indisponível (Erro 404). Verifique se as Edge Functions estão ativas e acessíveis.'
+      } else if (
+        errorMessage.includes('Unauthorized') ||
+        errorMessage.includes('permissão') ||
+        errorMessage.includes('401') ||
+        errorMessage.includes('Acesso Negado')
+      ) {
+        errorMessage =
+          'Você não tem permissão para realizar esta importação. Esta ação é restrita a Administradores.'
+      }
+
       toast({
         title: 'Erro na importação',
-        description: error.message || 'Ocorreu um erro inesperado.',
+        description: errorMessage,
         variant: 'destructive',
       })
     } finally {

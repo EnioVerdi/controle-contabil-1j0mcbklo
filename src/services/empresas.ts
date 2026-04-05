@@ -17,8 +17,17 @@ async function validatePermission(action: string) {
   const { data, error } = await supabase.functions.invoke('check-permission', {
     body: { action },
   })
-  if (error || !data?.allowed) {
-    throw new Error('Você não tem permissão para realizar esta ação.')
+
+  if (error) {
+    console.error('Erro na chamada da Edge Function (check-permission):', error)
+    if (error.message?.includes('Not Found') || error.name === 'FunctionsHttpError') {
+      throw new Error('Serviço não encontrado (404). Edge Function ausente ou inacessível.')
+    }
+    throw new Error('Falha de autenticação ou permissão (401). Verifique seu acesso.')
+  }
+
+  if (!data?.allowed) {
+    throw new Error('Você não tem permissão para realizar esta ação (Acesso Negado).')
   }
 }
 
@@ -26,7 +35,15 @@ export async function importEmpresas(
   empresas: Partial<Empresa>[],
   duplicateAction: 'overwrite' | 'skip',
 ): Promise<void> {
-  await validatePermission('create_empresa')
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+  if (!session) {
+    throw new Error('Sessão expirada ou usuário não autenticado. (401)')
+  }
+
+  // Verifica permissão específica para importação (apenas admin tem acesso total '*')
+  await validatePermission('import_empresas')
 
   const dbRecords = empresas.map((empresa) => ({
     id: empresa.id,
@@ -43,7 +60,10 @@ export async function importEmpresas(
     ignoreDuplicates: duplicateAction === 'skip',
   })
 
-  if (error) throw error
+  if (error) {
+    console.error('Erro ao fazer upsert na importação:', error)
+    throw new Error('Erro ao salvar os dados no banco. (500)')
+  }
 }
 
 export async function createEmpresa(empresa: Empresa): Promise<Empresa> {
