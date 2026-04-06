@@ -1,7 +1,6 @@
 {
   "_versions": {
     "check-permission": 3,
-    "manage-users": 4,
-    "import-csv": 1
+    "manage-users": 4
   }
 }
