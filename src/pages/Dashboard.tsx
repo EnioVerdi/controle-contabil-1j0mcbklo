@@ -93,14 +93,21 @@ export default function Dashboard() {
     'Lucro Real Trimestral',
     'Lucro Presumido',
     'Simples Nacional',
-    'Simples Nacional Híbrido',
+    'Simples Nacional Hibrido',
   ]
 
   const categoriesData = targetRegimes
     .map((regime) => {
-      const value = empresas.filter((emp) => emp.regime_tributario === regime).length
+      const value = empresas.filter((emp) => {
+        const rt = emp.regime_tributario || ''
+        if (regime === 'Simples Nacional Hibrido') {
+          return rt === 'Simples Nacional Hibrido' || rt === 'Simples Nacional Híbrido'
+        }
+        return rt === regime
+      }).length
+
       return {
-        name: regime,
+        name: regime === 'Simples Nacional Hibrido' ? 'Simples Nacional Híbrido' : regime,
         value,
         percent: totalEmpresas > 0 ? Math.round((value / totalEmpresas) * 100) : 0,
       }
