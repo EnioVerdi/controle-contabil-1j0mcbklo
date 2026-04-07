@@ -3,6 +3,35 @@ import { Empresa } from '@/types/empresa'
 import { ArrowUpDown, Building2, Eye, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+
+function getInitials(name: string) {
+  const words = (name || '').trim().split(/\s+/)
+  if (words.length === 0) return 'EM'
+  if (words.length === 1) return words[0].substring(0, 2).toUpperCase()
+  return (words[0][0] + words[1][0]).toUpperCase()
+}
+
+const avatarColors = [
+  'bg-red-100 text-red-700',
+  'bg-blue-100 text-blue-700',
+  'bg-green-100 text-green-700',
+  'bg-yellow-100 text-yellow-700',
+  'bg-purple-100 text-purple-700',
+  'bg-pink-100 text-pink-700',
+  'bg-indigo-100 text-indigo-700',
+  'bg-teal-100 text-teal-700',
+  'bg-orange-100 text-orange-700',
+  'bg-cyan-100 text-cyan-700',
+]
+
+function getColorClass(name: string) {
+  let hash = 0
+  for (let i = 0; i < (name || '').length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return avatarColors[Math.abs(hash) % avatarColors.length]
+}
 import {
   Table,
   TableBody,
@@ -73,11 +102,23 @@ export function EmpresasList({ data, onSort, onView, onEdit, onDelete }: Empresa
                   <TableCell className="font-medium text-muted-foreground">{empresa.id}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <img
-                        src={empresa.logo}
-                        alt={empresa.nome}
-                        className="h-8 w-8 rounded-lg object-cover"
-                      />
+                      {empresa.logo ? (
+                        <img
+                          src={empresa.logo}
+                          alt={empresa.nome}
+                          className="h-8 w-8 rounded-lg object-cover shrink-0"
+                        />
+                      ) : (
+                        <div
+                          className={cn(
+                            'h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0',
+                            getColorClass(empresa.nome),
+                          )}
+                          title={empresa.nome}
+                        >
+                          {getInitials(empresa.nome)}
+                        </div>
+                      )}
                       <span className="font-semibold text-foreground">{empresa.nome}</span>
                     </div>
                   </TableCell>
