@@ -77,14 +77,12 @@ export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Comércio">Comércio</SelectItem>
-                    <SelectItem value="Indústria">Indústria</SelectItem>
-                    <SelectItem value="Serviços">Serviços</SelectItem>
-                    <SelectItem value="Construtora/Incorporadora">
-                      Construtora/Incorporadora
-                    </SelectItem>
-                    <SelectItem value="Administradora de Bens">Administradora de Bens</SelectItem>
-                    <SelectItem value="Entidades">Entidades</SelectItem>
+                    <SelectItem value="Comercio">Comercio</SelectItem>
+                    <SelectItem value="Industria">Industria</SelectItem>
+                    <SelectItem value="Serviço">Serviço</SelectItem>
+                    <SelectItem value="Incorporadora">Incorporadora</SelectItem>
+                    <SelectItem value="Construtora">Construtora</SelectItem>
+                    <SelectItem value="Adm. de Bens">Adm. de Bens</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -108,8 +106,8 @@ export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
                     <SelectItem value="Lucro Real Trimestral">Lucro Real Trimestral</SelectItem>
                     <SelectItem value="Lucro Presumido">Lucro Presumido</SelectItem>
                     <SelectItem value="Simples Nacional">Simples Nacional</SelectItem>
-                    <SelectItem value="Simples Nacional Híbrido">
-                      Simples Nacional Híbrido
+                    <SelectItem value="Simples Nacional Hibrido">
+                      Simples Nacional Hibrido
                     </SelectItem>
                   </SelectContent>
                 </Select>

@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { supabase } from '@/lib/supabase/client'
 
 interface EmpresaFormProps {
   empresa?: Empresa | null
@@ -46,8 +47,19 @@ export function EmpresaForm({ empresa, empresas, onSubmit, onCancel }: EmpresaFo
   const [formData, setFormData] = useState<Partial<Empresa>>(empresa || defaultEmpresa)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [users, setUsers] = useState<{ id: string; name: string }[]>([])
 
   const isEditing = !!empresa
+
+  useEffect(() => {
+    async function fetchUsers() {
+      const { data } = await supabase.from('profiles').select('id, name').order('name')
+      if (data) {
+        setUsers(data)
+      }
+    }
+    fetchUsers()
+  }, [])
 
   useEffect(() => {
     if (empresa) {
@@ -118,38 +130,58 @@ export function EmpresaForm({ empresa, empresas, onSubmit, onCancel }: EmpresaFo
           <Label htmlFor="responsavel">
             Responsável <span className="text-red-500">*</span>
           </Label>
-          <Input
-            id="responsavel"
-            value={formData.responsavel}
-            onChange={(e) => handleChange('responsavel', e.target.value)}
-            placeholder="Nome do Responsável"
-          />
+          <Select
+            value={formData.responsavel || undefined}
+            onValueChange={(value) => handleChange('responsavel', value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione um responsável" />
+            </SelectTrigger>
+            <SelectContent>
+              {users.map((user) => (
+                <SelectItem key={`resp-${user.id}`} value={user.name}>
+                  {user.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-2">
           <Label htmlFor="atividade">
             Atividade <span className="text-red-500">*</span>
           </Label>
-          <Input
-            id="atividade"
-            value={formData.atividade}
-            onChange={(e) => handleChange('atividade', e.target.value)}
-            placeholder="Ramo de Atividade"
-          />
+          <Select
+            value={formData.atividade || undefined}
+            onValueChange={(value) => handleChange('atividade', value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione a atividade" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Comercio">Comercio</SelectItem>
+              <SelectItem value="Industria">Industria</SelectItem>
+              <SelectItem value="Serviço">Serviço</SelectItem>
+              <SelectItem value="Incorporadora">Incorporadora</SelectItem>
+              <SelectItem value="Construtora">Construtora</SelectItem>
+              <SelectItem value="Adm. de Bens">Adm. de Bens</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-2">
           <Label htmlFor="regimeTributario">Regime Tributário</Label>
           <Select
-            value={formData.regimeTributario}
+            value={formData.regimeTributario || undefined}
             onValueChange={(value) => handleChange('regimeTributario', value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Selecione o regime" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="Simples Nacional">Simples Nacional</SelectItem>
+              <SelectItem value="Lucro Real Mensal">Lucro Real Mensal</SelectItem>
+              <SelectItem value="Lucro Real Trimestral">Lucro Real Trimestral</SelectItem>
               <SelectItem value="Lucro Presumido">Lucro Presumido</SelectItem>
-              <SelectItem value="Lucro Real">Lucro Real</SelectItem>
-              <SelectItem value="MEI">MEI</SelectItem>
+              <SelectItem value="Simples Nacional">Simples Nacional</SelectItem>
+              <SelectItem value="Simples Nacional Hibrido">Simples Nacional Hibrido</SelectItem>
             </SelectContent>
           </Select>
         </div>
