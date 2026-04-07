@@ -93,8 +93,8 @@ export function ImportCsvDialog({
         )
       }
 
-      const parsedData: Partial<Empresa>[] = []
-      const foundDuplicates: string[] = []
+      const parsedDataMap = new Map<string, Partial<Empresa>>()
+      const foundDuplicates = new Set<string>()
 
       for (let i = 1; i < lines.length; i++) {
         const cols = lines[i].split(delimiter).map((c) => c.trim().replace(/^['"]|['"]$/g, ''))
@@ -110,20 +110,22 @@ export function ImportCsvDialog({
 
         if (!id || !nome) continue
 
-        parsedData.push({ id, nome, atividade, regimeTributario, fechamento })
+        parsedDataMap.set(id, { id, nome, atividade, regimeTributario, fechamento })
 
         // Usamos array local em vez de requisições HEAD na API para evitar erros "Unexpected end of JSON input"
         if (existingEmpresas.some((e) => e.id === id)) {
-          foundDuplicates.push(id)
+          foundDuplicates.add(id)
         }
       }
+
+      const parsedData = Array.from(parsedDataMap.values())
 
       if (parsedData.length === 0) {
         throw new Error('Nenhum dado válido encontrado para importar.')
       }
 
       setPreview(parsedData)
-      setDuplicates(foundDuplicates)
+      setDuplicates(Array.from(foundDuplicates))
     } catch (err: any) {
       setError(err.message || 'Erro ao processar o arquivo CSV.')
     }
