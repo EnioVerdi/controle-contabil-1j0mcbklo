@@ -86,11 +86,10 @@ export function ImportCsvDialog({
         colMap.id === -1 ||
         colMap.nome === -1 ||
         colMap.atividade === -1 ||
-        colMap.regime === -1 ||
-        colMap.fechamento === -1
+        colMap.regime === -1
       ) {
         throw new Error(
-          'Colunas obrigatórias não encontradas. Certifique-se de ter: Código, Nome, Atividade, Regime Tributário, Fechamento.',
+          'Colunas obrigatórias não encontradas. Certifique-se de ter: Código, Nome, Atividade, Regime Tributário.',
         )
       }
 
@@ -100,13 +99,14 @@ export function ImportCsvDialog({
       for (let i = 1; i < lines.length; i++) {
         const cols = lines[i].split(delimiter).map((c) => c.trim().replace(/^['"]|['"]$/g, ''))
 
-        if (cols.length < Math.max(...Object.values(colMap))) continue
+        const requiredColIndices = [colMap.id, colMap.nome, colMap.atividade, colMap.regime]
+        if (cols.length <= Math.max(...requiredColIndices)) continue
 
         const id = cols[colMap.id]
         const nome = cols[colMap.nome]
         const atividade = cols[colMap.atividade]
         const regimeTributario = cols[colMap.regime]
-        const fechamento = cols[colMap.fechamento]
+        const fechamento = colMap.fechamento !== -1 ? cols[colMap.fechamento] : undefined
 
         if (!id || !nome) continue
 
@@ -181,7 +181,7 @@ export function ImportCsvDialog({
           <DialogTitle>Importar Empresas via CSV</DialogTitle>
           <DialogDescription>
             Faça upload de um arquivo CSV contendo as colunas: Código, Nome, Atividade, Regime
-            Tributário, Fechamento.
+            Tributário. (Fechamento é opcional)
           </DialogDescription>
         </DialogHeader>
 
@@ -266,7 +266,7 @@ export function ImportCsvDialog({
                           <TableCell>{row.nome}</TableCell>
                           <TableCell>{row.atividade}</TableCell>
                           <TableCell>{row.regimeTributario}</TableCell>
-                          <TableCell>{row.fechamento}</TableCell>
+                          <TableCell>{row.fechamento || '-'}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
