@@ -145,43 +145,4 @@ export function EmpresasList({ data, onSort, onView, onEdit, onDelete }: Empresa
                         size="icon"
                         title="Ver Detalhes"
                         className="h-8 w-8 rounded-lg hover:bg-blue-50 hover:text-blue-600"
-                        onClick={() => {
-                          onView(empresa)
-                          navigate(`/empresas/${empresa.id}`)
-                        }}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      {onEdit && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title="Editar"
-                          className="h-8 w-8 rounded-lg hover:bg-slate-100"
-                          onClick={() => onEdit(empresa)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {onDelete && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          title="Excluir"
-                          className="h-8 w-8 rounded-lg hover:bg-red-50 hover:text-red-600"
-                          onClick={() => onDelete(empresa)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
-  )
-}
+                      
