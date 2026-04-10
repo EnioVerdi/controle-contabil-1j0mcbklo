@@ -38,8 +38,12 @@ const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4'
 export default function Analytics() {
   const [empresas, setEmpresas] = useState<any[]>([])
   const [timelines, setTimelines] = useState<any[]>([])
-  const [year, setYear] = useState('2026')
+  const [year, setYear] = useState(() => localStorage.getItem('finova_year') || '2026')
   const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    localStorage.setItem('finova_year', year)
+  }, [year])
   const [searchUser, setSearchUser] = useState('Todos')
   const [searchCompany, setSearchCompany] = useState('')
 
@@ -114,13 +118,13 @@ export default function Analytics() {
       const t = timelines.filter((x) => uIds.includes(x.empresa_id))
       const concluidas = t.filter((x) => x.status === 'concluido').length
       const abertas = t.filter((x) => x.status === 'aberto').length
-      const pendentes = t.filter((x) => x.status === 'nao_iniciado').length
+      const pendentes = uIds.length * 12 - concluidas - abertas
       return {
         responsavel: u,
         concluidas,
         abertas,
         pendentes,
-        total: concluidas + abertas + pendentes,
+        total: uIds.length * 12,
       }
     })
     const config = {

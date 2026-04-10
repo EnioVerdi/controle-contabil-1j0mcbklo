@@ -4,7 +4,8 @@ import { createClient } from 'jsr:@supabase/supabase-js@2'
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, x-supabase-client-platform, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, x-supabase-client-platform, apikey, content-type',
 }
 
 Deno.serve(async (req: Request) => {
@@ -24,7 +25,10 @@ Deno.serve(async (req: Request) => {
     const userClient = createClient(supabaseUrl, supabaseKey, {
       global: { headers: { Authorization: authHeader } },
     })
-    const { data: { user }, error: userError } = await userClient.auth.getUser()
+    const {
+      data: { user },
+      error: userError,
+    } = await userClient.auth.getUser()
     if (userError || !user) throw new Error('Not authenticated')
 
     // 2. Verify caller is Admin
@@ -48,7 +52,7 @@ Deno.serve(async (req: Request) => {
         email: userData.email,
         password: userData.password,
         email_confirm: true,
-        user_metadata: { name: userData.name, role: userData.role_id }
+        user_metadata: { name: userData.name, role: userData.role_id },
       })
       if (authError) throw authError
 
@@ -60,7 +64,7 @@ Deno.serve(async (req: Request) => {
         email: userData.email,
         role_id: userData.role_id,
         role: userData.role_id,
-        status: userData.status || 'Ativo'
+        status: userData.status || 'Ativo',
       })
       if (profileError) throw profileError
 
@@ -71,9 +75,13 @@ Deno.serve(async (req: Request) => {
 
     if (action === 'update') {
       const { id, email, password, name, role_id, status } = userData
-      
+
       // Procurar o auth.users.id correspondente ao profile.id
-      const { data: profileToUpdate } = await adminClient.from('profiles').select('user_id').eq('id', id).single()
+      const { data: profileToUpdate } = await adminClient
+        .from('profiles')
+        .select('user_id')
+        .eq('id', id)
+        .single()
       const authId = profileToUpdate?.user_id || id
 
       const updateData: any = { email, user_metadata: { name, role: role_id } }
@@ -88,13 +96,16 @@ Deno.serve(async (req: Request) => {
         name,
         email,
         role_id,
-        role: role_id
+        role: role_id,
       }
       if (status) {
         profileUpdate.status = status
       }
 
-      const { error: profileError } = await adminClient.from('profiles').update(profileUpdate).eq('id', id)
+      const { error: profileError } = await adminClient
+        .from('profiles')
+        .update(profileUpdate)
+        .eq('id', id)
       if (profileError) throw profileError
 
       return new Response(JSON.stringify({ success: true }), {
@@ -104,8 +115,12 @@ Deno.serve(async (req: Request) => {
 
     if (action === 'delete') {
       const { id } = userData
-      
-      const { data: profileToDelete } = await adminClient.from('profiles').select('user_id').eq('id', id).single()
+
+      const { data: profileToDelete } = await adminClient
+        .from('profiles')
+        .select('user_id')
+        .eq('id', id)
+        .single()
       const authId = profileToDelete?.user_id || id
 
       const { error: authError } = await adminClient.auth.admin.deleteUser(authId)
