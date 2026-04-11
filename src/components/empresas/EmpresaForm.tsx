@@ -161,9 +161,9 @@ export function EmpresaForm({ empresa, empresas, onSubmit, onCancel }: EmpresaFo
               <SelectItem value="Comercio">Comercio</SelectItem>
               <SelectItem value="Industria">Industria</SelectItem>
               <SelectItem value="Serviço">Serviço</SelectItem>
-              <SelectItem value="Incorporadora">Incorporadora</SelectItem>
               <SelectItem value="Construtora">Construtora</SelectItem>
               <SelectItem value="Adm. de Bens">Adm. de Bens</SelectItem>
+              <SelectItem value="Entidade">Entidade</SelectItem>
             </SelectContent>
           </Select>
         </div>
