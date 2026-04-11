@@ -43,7 +43,22 @@ export default function Analytics() {
 
   useEffect(() => {
     localStorage.setItem('finova_year', year)
+    window.dispatchEvent(new Event('finova_year_changed'))
   }, [year])
+
+  useEffect(() => {
+    const handleStorage = () => {
+      const y = localStorage.getItem('finova_year')
+      if (y && y !== year) setYear(y)
+    }
+    window.addEventListener('storage', handleStorage)
+    window.addEventListener('finova_year_changed', handleStorage)
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('finova_year_changed', handleStorage)
+    }
+  }, [year])
+
   const [searchUser, setSearchUser] = useState('Todos')
   const [searchCompany, setSearchCompany] = useState('')
 
@@ -118,7 +133,8 @@ export default function Analytics() {
       const t = timelines.filter((x) => uIds.includes(x.empresa_id))
       const concluidas = t.filter((x) => x.status === 'concluido').length
       const abertas = t.filter((x) => x.status === 'aberto').length
-      const pendentes = uIds.length * 12 - concluidas - abertas
+      const pendentes =
+        t.filter((x) => x.status === 'nao_iniciado').length + (uIds.length * 12 - t.length)
       return {
         responsavel: u,
         concluidas,

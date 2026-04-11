@@ -36,8 +36,15 @@ export function TopCategories({ categories = [] }: { categories?: any[] }) {
     { name: 'Simples Nacional Híbrido', value: 0, percent: 0 },
   ]
 
-  const items = defaultCategories.map((defaultCat, index) => {
-    return categories[index] || defaultCat
+  const normalize = (str: string) =>
+    str
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+
+  const items = defaultCategories.map((defaultCat) => {
+    const found = categories.find((c) => normalize(c.name) === normalize(defaultCat.name))
+    return found || defaultCat
   })
 
   const bubbleConfigs = [
