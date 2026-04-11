@@ -80,9 +80,9 @@ export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
                     <SelectItem value="Comercio">Comercio</SelectItem>
                     <SelectItem value="Industria">Industria</SelectItem>
                     <SelectItem value="Serviço">Serviço</SelectItem>
-                    <SelectItem value="Incorporadora">Incorporadora</SelectItem>
                     <SelectItem value="Construtora">Construtora</SelectItem>
                     <SelectItem value="Adm. de Bens">Adm. de Bens</SelectItem>
+                    <SelectItem value="Entidade">Entidade</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
