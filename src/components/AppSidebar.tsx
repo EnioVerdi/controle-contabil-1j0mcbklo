@@ -66,7 +66,9 @@ export function AppSidebar() {
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-900 text-white">
             <Activity className="h-5 w-5 fill-current" />
           </div>
-          <span className="text-xl font-extrabold tracking-tight text-gray-900">Finova</span>
+          <span className="text-xl font-extrabold tracking-tight text-gray-900">
+            Verdi &amp; Oelke
+          </span>
         </div>
       </SidebarHeader>
 
