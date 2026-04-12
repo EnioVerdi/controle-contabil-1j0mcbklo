@@ -61,6 +61,8 @@ export default function Analytics() {
 
   const [searchUser, setSearchUser] = useState('Todos')
   const [searchCompany, setSearchCompany] = useState('')
+  const [filterTable1, setFilterTable1] = useState('')
+  const [filterTable2, setFilterTable2] = useState('')
 
   useEffect(() => {
     async function load() {
@@ -68,7 +70,9 @@ export default function Analytics() {
       const [{ data: emp }, { data: tl }] = await Promise.all([
         supabase
           .from('empresas')
-          .select('id, nome, responsavel, regime_tributario, fiscal, created_at'),
+          .select(
+            'id, nome, responsavel, regime_tributario, fiscal, created_at, profiles!empresas_responsavel_fkey(name)',
+          ),
         supabase.from('empresa_timeline').select('empresa_id, status').eq('ano', parseInt(year)),
       ])
       setEmpresas(emp || [])
@@ -79,10 +83,15 @@ export default function Analytics() {
   }, [year])
 
   const { filteredEmpresas, users } = useMemo(() => {
-    const fe = empresas.filter((e) => new Date(e.created_at).getFullYear() <= parseInt(year))
+    const fe = empresas
+      .filter((e) => new Date(e.created_at).getFullYear() <= parseInt(year))
+      .map((e) => ({
+        ...e,
+        responsavelName: e.profiles?.name || 'Não atribuído',
+      }))
     return {
       filteredEmpresas: fe,
-      users: Array.from(new Set(fe.map((e) => e.responsavel).filter(Boolean))),
+      users: Array.from(new Set(fe.map((e) => e.responsavelName).filter(Boolean))),
     }
   }, [empresas, year])
 
@@ -98,7 +107,7 @@ export default function Analytics() {
     })
 
     const chartData = users.map((u) => {
-      const ue = filteredEmpresas.filter((e) => e.responsavel === u)
+      const ue = filteredEmpresas.filter((e) => e.responsavelName === u)
       const d: any = { responsavel: u }
       ue.forEach((e) => {
         const s = slug(e.regime_tributario || 'Não Definido')
@@ -109,7 +118,7 @@ export default function Analytics() {
 
     const tableData = users
       .flatMap((u) => {
-        const ue = filteredEmpresas.filter((e) => e.responsavel === u)
+        const ue = filteredEmpresas.filter((e) => e.responsavelName === u)
         const counts: Record<string, number> = {}
         ue.forEach((e) => {
           const r = e.regime_tributario || 'Não Definido'
@@ -129,7 +138,7 @@ export default function Analytics() {
 
   const s2 = useMemo(() => {
     const data = users.map((u) => {
-      const uIds = filteredEmpresas.filter((e) => e.responsavel === u).map((e) => e.id)
+      const uIds = filteredEmpresas.filter((e) => e.responsavelName === u).map((e) => e.id)
       const t = timelines.filter((x) => uIds.includes(x.empresa_id))
       const concluidas = t.filter((x) => x.status === 'concluido').length
       const abertas = t.filter((x) => x.status === 'aberto').length
@@ -151,12 +160,24 @@ export default function Analytics() {
     return { chartData: data, tableData: [...data].sort((a, b) => b.total - a.total), config }
   }, [filteredEmpresas, users, timelines])
 
+  const filteredTable1 = useMemo(() => {
+    return s1.tableData.filter((r) =>
+      r.responsavel.toLowerCase().includes(filterTable1.toLowerCase()),
+    )
+  }, [s1.tableData, filterTable1])
+
+  const filteredTable2 = useMemo(() => {
+    return s2.tableData.filter((r) =>
+      r.responsavel.toLowerCase().includes(filterTable2.toLowerCase()),
+    )
+  }, [s2.tableData, filterTable2])
+
   const searchResults = useMemo(
     () =>
       filteredEmpresas
         .filter(
           (e) =>
-            (searchUser === 'Todos' || e.responsavel === searchUser) &&
+            (searchUser === 'Todos' || e.responsavelName === searchUser) &&
             (e.nome.toLowerCase().includes(searchCompany.toLowerCase()) ||
               e.id.toLowerCase().includes(searchCompany.toLowerCase())),
         )
@@ -228,10 +249,24 @@ export default function Analytics() {
                 ))}
               </BarChart>
             </ChartContainer>
-            <div className="rounded-xl border border-gray-100 max-h-[400px] overflow-auto">
+
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="text-sm font-semibold text-gray-700">Detalhamento por Usuário</h4>
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar usuário..."
+                  value={filterTable1}
+                  onChange={(e) => setFilterTable1(e.target.value)}
+                  className="pl-9 border-gray-200 rounded-xl h-9"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-gray-100 max-h-[300px] overflow-auto relative">
               <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50/50">
+                <TableHeader className="sticky top-0 z-10 bg-gray-50 shadow-sm">
+                  <TableRow className="bg-gray-50 hover:bg-gray-50">
                     <TableHead className="font-semibold text-gray-600">Usuário</TableHead>
                     <TableHead className="font-semibold text-gray-600">Tributação</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Qtd</TableHead>
@@ -239,14 +274,22 @@ export default function Analytics() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {s1.tableData.map((r, i) => (
-                    <TableRow key={i}>
-                      <TableCell className="font-medium text-gray-900">{r.responsavel}</TableCell>
-                      <TableCell className="text-gray-600">{r.regime}</TableCell>
-                      <TableCell className="text-right text-gray-900">{r.quantidade}</TableCell>
-                      <TableCell className="text-right text-gray-600">{r.percentual}</TableCell>
+                  {filteredTable1.length > 0 ? (
+                    filteredTable1.map((r, i) => (
+                      <TableRow key={i}>
+                        <TableCell className="font-medium text-gray-900">{r.responsavel}</TableCell>
+                        <TableCell className="text-gray-600">{r.regime}</TableCell>
+                        <TableCell className="text-right text-gray-900">{r.quantidade}</TableCell>
+                        <TableCell className="text-right text-gray-600">{r.percentual}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={4} className="h-32 text-center text-gray-500">
+                        Nenhum resultado encontrado.
+                      </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
             </div>
@@ -291,10 +334,24 @@ export default function Analytics() {
                 />
               </BarChart>
             </ChartContainer>
-            <div className="rounded-xl border border-gray-100 max-h-[400px] overflow-auto">
+
+            <div className="flex justify-between items-center mb-2">
+              <h4 className="text-sm font-semibold text-gray-700">Detalhamento por Usuário</h4>
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Buscar usuário..."
+                  value={filterTable2}
+                  onChange={(e) => setFilterTable2(e.target.value)}
+                  className="pl-9 border-gray-200 rounded-xl h-9"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-gray-100 max-h-[300px] overflow-auto relative">
               <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50/50">
+                <TableHeader className="sticky top-0 z-10 bg-gray-50 shadow-sm">
+                  <TableRow className="bg-gray-50 hover:bg-gray-50">
                     <TableHead className="font-semibold text-gray-600">Usuário</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">
                       Concluídas
@@ -309,23 +366,31 @@ export default function Analytics() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {s2.tableData.map((r, i) => (
-                    <TableRow key={i}>
-                      <TableCell className="font-medium text-gray-900">{r.responsavel}</TableCell>
-                      <TableCell className="text-right text-emerald-600 font-medium">
-                        {r.concluidas}
-                      </TableCell>
-                      <TableCell className="text-right text-amber-600 font-medium">
-                        {r.abertas}
-                      </TableCell>
-                      <TableCell className="text-right text-purple-600 font-medium">
-                        {r.pendentes}
-                      </TableCell>
-                      <TableCell className="text-right font-bold text-gray-900">
-                        {r.total}
+                  {filteredTable2.length > 0 ? (
+                    filteredTable2.map((r, i) => (
+                      <TableRow key={i}>
+                        <TableCell className="font-medium text-gray-900">{r.responsavel}</TableCell>
+                        <TableCell className="text-right text-emerald-600 font-medium">
+                          {r.concluidas}
+                        </TableCell>
+                        <TableCell className="text-right text-amber-600 font-medium">
+                          {r.abertas}
+                        </TableCell>
+                        <TableCell className="text-right text-purple-600 font-medium">
+                          {r.pendentes}
+                        </TableCell>
+                        <TableCell className="text-right font-bold text-gray-900">
+                          {r.total}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-32 text-center text-gray-500">
+                        Nenhum resultado encontrado.
                       </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
             </div>
@@ -365,10 +430,10 @@ export default function Analytics() {
               />
             </div>
           </div>
-          <div className="rounded-xl border border-gray-100 overflow-hidden">
+          <div className="rounded-xl border border-gray-100 max-h-[300px] overflow-auto relative">
             <Table>
-              <TableHeader>
-                <TableRow className="bg-gray-50/50">
+              <TableHeader className="sticky top-0 z-10 bg-gray-50 shadow-sm">
+                <TableRow className="bg-gray-50 hover:bg-gray-50">
                   <TableHead className="font-semibold text-gray-600">Empresa</TableHead>
                   <TableHead className="font-semibold text-gray-600">Código</TableHead>
                   <TableHead className="font-semibold text-gray-600">Tributação</TableHead>
