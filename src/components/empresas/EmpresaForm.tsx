@@ -24,6 +24,7 @@ interface EmpresaFormProps {
 const defaultEmpresa: Partial<Empresa> = {
   id: '',
   nome: '',
+  responsavel_id: null,
   responsavel: '',
   atividade: '',
   fiscal: 'Pendente',
@@ -77,7 +78,7 @@ export function EmpresaForm({ empresa, empresas, onSubmit, onCancel }: EmpresaFo
     e.preventDefault()
     setError(null)
 
-    if (!formData.id || !formData.nome || !formData.responsavel || !formData.atividade) {
+    if (!formData.id || !formData.nome || !formData.responsavel_id || !formData.atividade) {
       setError('Preencha todos os campos obrigatórios (Código, Nome, Responsável, Atividade).')
       return
     }
@@ -131,15 +132,15 @@ export function EmpresaForm({ empresa, empresas, onSubmit, onCancel }: EmpresaFo
             Responsável <span className="text-red-500">*</span>
           </Label>
           <Select
-            value={formData.responsavel || undefined}
-            onValueChange={(value) => handleChange('responsavel', value)}
+            value={formData.responsavel_id || undefined}
+            onValueChange={(value) => handleChange('responsavel_id', value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Selecione um responsável" />
             </SelectTrigger>
             <SelectContent>
               {users.map((user) => (
-                <SelectItem key={`resp-${user.id}`} value={user.name}>
+                <SelectItem key={`resp-${user.id}`} value={user.id}>
                   {user.name}
                 </SelectItem>
               ))}

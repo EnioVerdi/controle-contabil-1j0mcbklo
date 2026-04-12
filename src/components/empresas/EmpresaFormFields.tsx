@@ -122,7 +122,7 @@ export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
         <h3 className="font-semibold text-lg border-b pb-2 text-foreground">2. Responsabilidade</h3>
         <FormField
           control={form.control}
-          name="responsavel"
+          name="responsavel_id"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Responsável Atual</FormLabel>
@@ -134,7 +134,7 @@ export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
                 </FormControl>
                 <SelectContent>
                   {users.map((user) => (
-                    <SelectItem key={`resp-${user.id}`} value={user.name}>
+                    <SelectItem key={`resp-${user.id}`} value={user.id}>
                       {user.name}
                     </SelectItem>
                   ))}

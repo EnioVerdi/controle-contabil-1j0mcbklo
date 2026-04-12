@@ -2,13 +2,19 @@ import { supabase } from '@/lib/supabase/client'
 import { Empresa } from '@/types/empresa'
 
 export async function fetchEmpresas(): Promise<Empresa[]> {
-  const { data, error } = await supabase.from('empresas').select('*')
+  const { data, error } = await supabase
+    .from('empresas')
+    .select('*, profiles!empresas_responsavel_fkey(name)')
   if (error) throw error
   return data.map(mapEmpresaFromDB)
 }
 
 export async function fetchEmpresaById(id: string): Promise<Empresa> {
-  const { data, error } = await supabase.from('empresas').select('*').eq('id', id).single()
+  const { data, error } = await supabase
+    .from('empresas')
+    .select('*, profiles!empresas_responsavel_fkey(name)')
+    .eq('id', id)
+    .single()
   if (error) throw error
   return mapEmpresaFromDB(data)
 }
@@ -45,13 +51,24 @@ export async function importEmpresas(
 
   await validatePermission('create_empresa')
 
+  const { data: profiles } = await supabase.from('profiles').select('id, name')
+  const getProfileId = (name?: string) => {
+    if (!name) return null
+    const exactMatch = profiles?.find((p) => p.name.toLowerCase() === name.toLowerCase())
+    if (exactMatch) return exactMatch.id
+    const partialMatch = profiles?.find(
+      (p) => p.name.split(' ')[0].toLowerCase() === name.split(' ')[0].toLowerCase(),
+    )
+    return partialMatch ? partialMatch.id : null
+  }
+
   const mappedEmpresas = empresas.map((e) => ({
     id: e.id,
     nome: e.nome,
     atividade: e.atividade || 'Não informada',
     regime_tributario: e.regimeTributario || null,
     fechamento: e.fechamento || null,
-    responsavel: e.responsavel || 'Não informado',
+    responsavel: e.responsavel_id || getProfileId(e.responsavel),
     fiscal: 'Pendente',
   }))
 
@@ -104,7 +121,8 @@ function mapEmpresaFromDB(db: any): Empresa {
     id: db.id,
     nome: db.nome,
     logo: db.logo || '',
-    responsavel: db.responsavel,
+    responsavel: db.profiles?.name || 'Não informado',
+    responsavel_id: db.responsavel,
     atividade: db.atividade,
     fechamento: db.fechamento || '',
     fiscal: db.fiscal,
@@ -128,7 +146,7 @@ function mapEmpresaToDB(empresa: Empresa): any {
     id: empresa.id,
     nome: empresa.nome,
     logo: empresa.logo,
-    responsavel: empresa.responsavel,
+    responsavel: empresa.responsavel_id || null,
     atividade: empresa.atividade,
     fechamento: empresa.fechamento,
     fiscal: empresa.fiscal,

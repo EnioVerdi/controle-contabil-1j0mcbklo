@@ -2,7 +2,8 @@ export interface Empresa {
   id: string
   nome: string
   logo?: string
-  responsavel: string
+  responsavel?: string
+  responsavel_id?: string | null
   atividade: string
   fechamento?: string
   fiscal: string

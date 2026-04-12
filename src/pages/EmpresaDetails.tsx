@@ -14,14 +14,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Building2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { EmpresaForm } from '@/components/empresas/EmpresaForm'
 import { EmpresaDetailsHeader } from '@/components/empresas/EmpresaDetailsHeader'
 import { EmpresaDetailsCards } from '@/components/empresas/EmpresaDetailsCards'
 import { SystemInfoCard } from '@/components/empresas/SystemInfoCard'
+import { supabase } from '@/lib/supabase/client'
 
 export default function EmpresaDetails() {
   const { id } = useParams()
@@ -31,13 +38,20 @@ export default function EmpresaDetails() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isTransferDialogOpen, setIsTransferDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [newResponsavel, setNewResponsavel] = useState('')
+  const [newResponsavelId, setNewResponsavelId] = useState('')
+  const [users, setUsers] = useState<{ id: string; name: string }[]>([])
 
   useEffect(() => {
     if (id) {
       loadData(id)
     }
+    loadUsers()
   }, [id])
+
+  const loadUsers = async () => {
+    const { data } = await supabase.from('profiles').select('id, name').order('name')
+    if (data) setUsers(data)
+  }
 
   const loadData = async (empresaId: string) => {
     try {
@@ -94,21 +108,22 @@ export default function EmpresaDetails() {
   }
 
   const handleTransfer = async () => {
-    if (newResponsavel.trim()) {
+    if (newResponsavelId) {
       try {
         const updated = await updateEmpresa(empresa.id, {
-          responsavel: newResponsavel.trim(),
+          ...empresa,
+          responsavel_id: newResponsavelId,
           novoResponsavel: '',
         })
         setEmpresa(updated)
         setIsTransferDialogOpen(false)
-        setNewResponsavel('')
+        setNewResponsavelId('')
         toast.success('Responsável transferido com sucesso!')
       } catch (error) {
         toast.error('Erro ao transferir responsável')
       }
     } else {
-      toast.error('Informe o nome do novo responsável.')
+      toast.error('Selecione o novo responsável.')
     }
   }
 
@@ -148,12 +163,18 @@ export default function EmpresaDetails() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="new-responsavel">Novo Responsável</Label>
-              <Input
-                id="new-responsavel"
-                placeholder="Nome do novo responsável"
-                value={newResponsavel}
-                onChange={(e) => setNewResponsavel(e.target.value)}
-              />
+              <Select value={newResponsavelId} onValueChange={setNewResponsavelId}>
+                <SelectTrigger id="new-responsavel">
+                  <SelectValue placeholder="Selecione o novo responsável" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.map((user) => (
+                    <SelectItem key={user.id} value={user.id}>
+                      {user.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="flex justify-end gap-3">
