@@ -195,13 +195,13 @@ export default function Analytics() {
         </Select>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-8">
         <Card className="shadow-sm border-gray-100">
           <CardHeader>
             <CardTitle className="text-lg">Empresas por Tipo de Tributação</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <ChartContainer config={s1.config} className="h-[280px] w-full">
+            <ChartContainer config={s1.config} className="h-[350px] lg:h-[450px] w-full">
               <BarChart data={s1.chartData} margin={{ top: 10 }}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#f3f4f6" />
                 <XAxis
@@ -228,7 +228,7 @@ export default function Analytics() {
                 ))}
               </BarChart>
             </ChartContainer>
-            <div className="rounded-xl border border-gray-100 h-[240px] overflow-auto">
+            <div className="rounded-xl border border-gray-100 max-h-[400px] overflow-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50/50">
@@ -258,7 +258,7 @@ export default function Analytics() {
             <CardTitle className="text-lg">Volume de Tarefas por Usuário</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <ChartContainer config={s2.config} className="h-[280px] w-full">
+            <ChartContainer config={s2.config} className="h-[350px] lg:h-[450px] w-full">
               <BarChart data={s2.chartData} margin={{ top: 10 }}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#f3f4f6" />
                 <XAxis
@@ -291,7 +291,7 @@ export default function Analytics() {
                 />
               </BarChart>
             </ChartContainer>
-            <div className="rounded-xl border border-gray-100 h-[240px] overflow-auto">
+            <div className="rounded-xl border border-gray-100 max-h-[400px] overflow-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50/50">
