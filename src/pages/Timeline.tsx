@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   CheckCircle2,
   XCircle,
@@ -16,6 +16,7 @@ import {
   PieChart,
   Calculator,
   Loader2,
+  BarChart3,
 } from 'lucide-react'
 import {
   Select,
@@ -45,6 +46,7 @@ import {
   upsertTimelineMonth,
   fetchObservacoes,
   addObservacao,
+  fetchResumoMensal,
 } from '@/services/timeline'
 import { Empresa } from '@/types/empresa'
 import { StatusTimeline, ObservacaoTimeline } from '@/types/timeline'
@@ -141,8 +143,28 @@ export default function Timeline() {
   const [observacoes, setObservacoes] = useState<ObservacaoTimeline[]>([])
   const [novaObservacao, setNovaObservacao] = useState('')
   const [savingObs, setSavingObs] = useState(false)
+  const [resumoMensal, setResumoMensal] = useState<Record<number, number>>({})
   const { toast } = useToast()
   const { can } = usePermissions()
+
+  const loadResumo = useCallback(async (ano: string) => {
+    try {
+      const data = await fetchResumoMensal(parseInt(ano))
+      const counts: Record<number, number> = {}
+      data.forEach((item: any) => {
+        counts[item.mes] = (counts[item.mes] || 0) + 1
+      })
+      setResumoMensal(counts)
+    } catch (error) {
+      console.error('Erro ao carregar resumo:', error)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (selectedAno) {
+      loadResumo(selectedAno)
+    }
+  }, [selectedAno, loadResumo])
 
   useEffect(() => {
     let isMounted = true
@@ -226,6 +248,7 @@ export default function Timeline() {
 
     try {
       await upsertTimelineMonth(selectedEmpresaId, parseInt(selectedAno), index + 1, next)
+      loadResumo(selectedAno)
     } catch (error) {
       // Revert on error
       const reverted = [...updatedMonths]
@@ -347,6 +370,34 @@ export default function Timeline() {
           </Select>
         </div>
       </div>
+
+      <Card className="bg-white shadow-sm border-gray-100">
+        <CardHeader className="bg-gray-50/50 border-b border-gray-100 pb-4">
+          <CardTitle className="text-base font-semibold text-gray-800 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-blue-600" />
+            Resumo de Produtividade ({selectedAno})
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {MONTHS.map((month, idx) => {
+              const count = resumoMensal[idx + 1] || 0
+              return (
+                <div
+                  key={month}
+                  className="flex flex-col items-center p-3 rounded-lg border border-gray-100 bg-gray-50/50 hover:bg-gray-50 transition-colors"
+                >
+                  <span className="text-sm font-medium text-gray-500 mb-1">{month}</span>
+                  <span className="text-2xl font-bold text-gray-900">{count}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mt-1">
+                    empresas
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       {empresa ? (
         <div className="space-y-6">

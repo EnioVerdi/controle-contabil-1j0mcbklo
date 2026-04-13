@@ -57,6 +57,17 @@ export async function addObservacao(
   return data as any
 }
 
+export async function fetchResumoMensal(ano: number) {
+  const { data, error } = await supabase
+    .from('empresa_timeline')
+    .select('mes')
+    .eq('ano', ano)
+    .eq('status', 'concluido')
+
+  if (error) throw error
+  return data
+}
+
 export async function upsertTimelineMonth(
   empresaId: string,
   ano: number,
@@ -71,6 +82,8 @@ export async function upsertTimelineMonth(
     throw new Error('Você não tem permissão para realizar esta ação.')
   }
 
+  const data_conclusao = status === 'concluido' ? new Date().toISOString() : null
+
   const { data, error } = await supabase
     .from('empresa_timeline')
     .upsert(
@@ -79,7 +92,8 @@ export async function upsertTimelineMonth(
         ano,
         mes,
         status,
-      },
+        data_conclusao,
+      } as any,
       { onConflict: 'empresa_id,ano,mes' },
     )
     .select()
