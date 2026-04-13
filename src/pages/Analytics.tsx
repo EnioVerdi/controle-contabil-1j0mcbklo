@@ -33,13 +33,37 @@ const slug = (t: string) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '_') || '_'
+
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4']
+
+const MONTHS = [
+  { value: '1', label: 'Janeiro' },
+  { value: '2', label: 'Fevereiro' },
+  { value: '3', label: 'Março' },
+  { value: '4', label: 'Abril' },
+  { value: '5', label: 'Maio' },
+  { value: '6', label: 'Junho' },
+  { value: '7', label: 'Julho' },
+  { value: '8', label: 'Agosto' },
+  { value: '9', label: 'Setembro' },
+  { value: '10', label: 'Outubro' },
+  { value: '11', label: 'Novembro' },
+  { value: '12', label: 'Dezembro' },
+]
+
+const PROD_YEARS = ['2024', '2025', '2026']
 
 export default function Analytics() {
   const [empresas, setEmpresas] = useState<any[]>([])
   const [timelines, setTimelines] = useState<any[]>([])
   const [year, setYear] = useState(() => localStorage.getItem('finova_year') || '2026')
   const [loading, setLoading] = useState(true)
+
+  // Produtividade Chart States
+  const [prodMonth, setProdMonth] = useState('Todos')
+  const [prodYear, setProdYear] = useState('2026')
+  const [prodUser, setProdUser] = useState('Todos')
+  const [prodTimeline, setProdTimeline] = useState<any[]>([])
 
   useEffect(() => {
     localStorage.setItem('finova_year', year)
@@ -82,6 +106,18 @@ export default function Analytics() {
     load()
   }, [year])
 
+  useEffect(() => {
+    async function loadProd() {
+      const { data } = await supabase
+        .from('empresa_timeline')
+        .select('empresa_id, mes, ano, status, data_conclusao')
+        .eq('ano', parseInt(prodYear))
+        .eq('status', 'concluido')
+      setProdTimeline(data || [])
+    }
+    loadProd()
+  }, [prodYear])
+
   const { filteredEmpresas, users } = useMemo(() => {
     const fe = empresas
       .filter((e) => new Date(e.created_at).getFullYear() <= parseInt(year))
@@ -94,6 +130,76 @@ export default function Analytics() {
       users: Array.from(new Set(fe.map((e) => e.responsavelName).filter(Boolean))),
     }
   }, [empresas, year])
+
+  const allUsers = useMemo(() => {
+    return Array.from(
+      new Set(empresas.map((e) => e.profiles?.name || 'Não atribuído').filter(Boolean)),
+    ).sort()
+  }, [empresas])
+
+  const prodChartData = useMemo(() => {
+    const filtered = prodTimeline.filter((t) => {
+      const emp = empresas.find((e) => e.id === t.empresa_id)
+      const resp = emp?.profiles?.name || 'Não atribuído'
+      if (prodUser !== 'Todos' && resp !== prodUser) return false
+      if (prodMonth !== 'Todos' && t.mes !== parseInt(prodMonth)) return false
+      return true
+    })
+    const countsByMonth = Array(12).fill(0)
+    filtered.forEach((t) => {
+      countsByMonth[t.mes - 1] += 1
+    })
+
+    const monthsNames = [
+      'Jan',
+      'Fev',
+      'Mar',
+      'Abr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Set',
+      'Out',
+      'Nov',
+      'Dez',
+    ]
+    return monthsNames
+      .map((m, i) => ({
+        mes: m,
+        concluidas: countsByMonth[i],
+        mesNum: i + 1,
+      }))
+      .filter((d) => prodMonth === 'Todos' || d.mesNum === parseInt(prodMonth))
+  }, [prodTimeline, empresas, prodUser, prodMonth])
+
+  const prodTableData = useMemo(() => {
+    const filtered = prodTimeline
+      .filter((t) => {
+        const emp = empresas.find((e) => e.id === t.empresa_id)
+        const resp = emp?.profiles?.name || 'Não atribuído'
+        if (prodUser !== 'Todos' && resp !== prodUser) return false
+        if (prodMonth !== 'Todos' && t.mes !== parseInt(prodMonth)) return false
+        return true
+      })
+      .map((t) => {
+        const emp = empresas.find((e) => e.id === t.empresa_id)
+        let formattedDate = 'N/A'
+        if (t.data_conclusao) {
+          const d = new Date(t.data_conclusao)
+          formattedDate = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`
+        }
+        return {
+          id: t.empresa_id + '-' + t.mes,
+          empresaNome: emp?.nome || 'Desconhecida',
+          dataConclusao: formattedDate,
+          responsavel: emp?.profiles?.name || 'Não atribuído',
+          rawDate: t.data_conclusao ? new Date(t.data_conclusao).getTime() : 0,
+        }
+      })
+      .sort((a, b) => b.rawDate - a.rawDate)
+    return filtered
+  }, [prodTimeline, empresas, prodUser, prodMonth])
 
   const s1 = useMemo(() => {
     const rMap = new Map<string, string>()
@@ -217,6 +323,125 @@ export default function Analytics() {
       </div>
 
       <div className="grid grid-cols-1 gap-8">
+        {/* Nova Seção: Produtividade Mensal */}
+        <Card className="shadow-sm border-gray-100">
+          <CardHeader>
+            <CardTitle className="text-lg">Produtividade: Empresas Concluídas</CardTitle>
+            <CardDescription>Acompanhamento mensal de entregas por responsável.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Select value={prodMonth} onValueChange={setProdMonth}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <SelectValue placeholder="Mês" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Todos">Todos os Meses</SelectItem>
+                  {MONTHS.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>
+                      {m.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={prodYear} onValueChange={setProdYear}>
+                <SelectTrigger className="w-full sm:w-[120px]">
+                  <SelectValue placeholder="Ano" />
+                </SelectTrigger>
+                <SelectContent>
+                  {PROD_YEARS.map((y) => (
+                    <SelectItem key={y} value={y}>
+                      {y}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={prodUser} onValueChange={setProdUser}>
+                <SelectTrigger className="w-full sm:w-[240px]">
+                  <SelectValue placeholder="Usuário" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Todos">Todos os Usuários</SelectItem>
+                  {allUsers.map((u) => (
+                    <SelectItem key={u} value={u}>
+                      {u}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <ChartContainer
+              config={{ concluidas: { label: 'Concluídas', color: '#3b82f6' } }}
+              className="h-[300px] w-full"
+            >
+              <BarChart data={prodChartData} margin={{ top: 10 }}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#f3f4f6" />
+                <XAxis
+                  dataKey="mes"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={10}
+                  style={{ fontFamily: 'sans-serif' }}
+                />
+                <ChartTooltip
+                  content={
+                    <ChartTooltipContent className="bg-white/80 backdrop-blur-md border-gray-100 shadow-xl rounded-xl" />
+                  }
+                />
+                <Bar
+                  dataKey="concluidas"
+                  fill="var(--color-concluidas)"
+                  radius={[6, 6, 0, 0]}
+                  maxBarSize={48}
+                />
+              </BarChart>
+            </ChartContainer>
+
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                Detalhamento de Conclusões
+              </h4>
+              <div className="rounded-xl border border-gray-100 max-h-[250px] overflow-auto relative">
+                <Table>
+                  <TableHeader className="sticky top-0 z-10 bg-gray-50 shadow-sm">
+                    <TableRow className="bg-gray-50 hover:bg-gray-50">
+                      <TableHead className="font-semibold text-gray-600">Empresa</TableHead>
+                      <TableHead className="font-semibold text-gray-600">
+                        Data de Conclusão
+                      </TableHead>
+                      <TableHead className="font-semibold text-gray-600">
+                        Usuário Responsável
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {prodTableData.length > 0 ? (
+                      prodTableData.map((r) => (
+                        <TableRow key={r.id}>
+                          <TableCell className="font-medium text-gray-900">
+                            {r.empresaNome}
+                          </TableCell>
+                          <TableCell className="text-gray-600">{r.dataConclusao}</TableCell>
+                          <TableCell className="text-gray-900">{r.responsavel}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={3} className="h-32 text-center text-gray-500">
+                          Nenhuma empresa concluída para os filtros selecionados.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card className="shadow-sm border-gray-100">
           <CardHeader>
             <CardTitle className="text-lg">Empresas por Tipo de Tributação</CardTitle>
