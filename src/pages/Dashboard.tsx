@@ -54,6 +54,7 @@ export default function Dashboard() {
   const tarefasEmAberto = filteredTimeline.filter((t) => t.status === 'aberto').length
   const tarefasConcluidas = filteredTimeline.filter((t) => t.status === 'concluido').length
   const tarefasPendentes = filteredTimeline.filter((t) => t.status === 'nao_iniciado').length
+  const totalTarefasPendentesGlobal = timeline.filter((t) => t.status === 'nao_iniciado').length
   const totalTarefasAno = filteredTimeline.length
   const taxaConclusao =
     totalTarefasAno > 0 ? Math.round((tarefasConcluidas / totalTarefasAno) * 100) : 0
@@ -186,9 +187,11 @@ export default function Dashboard() {
         />
         <KpiCard
           title="Tarefas Pendentes"
-          value={tarefasPendentes}
+          value={totalTarefasPendentesGlobal}
           trend={-2}
-          progress={totalTarefasAno ? Math.round((tarefasPendentes / totalTarefasAno) * 100) : 0}
+          progress={
+            timeline.length ? Math.round((totalTarefasPendentesGlobal / timeline.length) * 100) : 0
+          }
           colorClass="bg-yellow-100"
           progressColorClass="bg-yellow-400"
         />
