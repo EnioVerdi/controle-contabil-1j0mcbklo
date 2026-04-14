@@ -4,7 +4,9 @@ import { Empresa } from '@/types/empresa'
 export async function fetchEmpresas(): Promise<Empresa[]> {
   const { data, error } = await supabase
     .from('empresas')
-    .select('*, profiles!empresas_responsavel_fkey(name)')
+    .select(
+      '*, profiles!empresas_responsavel_fkey(name), tempo_orcado_empresas(mes, ano, tempo_orcado)',
+    )
   if (error) throw error
   return data.map(mapEmpresaFromDB)
 }
@@ -12,11 +14,35 @@ export async function fetchEmpresas(): Promise<Empresa[]> {
 export async function fetchEmpresaById(id: string): Promise<Empresa> {
   const { data, error } = await supabase
     .from('empresas')
-    .select('*, profiles!empresas_responsavel_fkey(name)')
+    .select(
+      '*, profiles!empresas_responsavel_fkey(name), tempo_orcado_empresas(mes, ano, tempo_orcado)',
+    )
     .eq('id', id)
     .single()
   if (error) throw error
   return mapEmpresaFromDB(data)
+}
+
+async function saveTemposOrcados(empresaId: string, temposOrcados?: Record<number, number>) {
+  const currentYear = new Date().getFullYear()
+  const upserts = []
+
+  for (let i = 1; i <= 12; i++) {
+    const tempo = temposOrcados?.[i] || 0
+    upserts.push({
+      empresa_id: empresaId,
+      mes: i,
+      ano: currentYear,
+      tempo_orcado: tempo,
+    })
+  }
+
+  if (upserts.length > 0) {
+    const { error } = await supabase
+      .from('tempo_orcado_empresas')
+      .upsert(upserts, { onConflict: 'empresa_id,mes,ano' })
+    if (error) console.error('Erro ao salvar tempos orçados:', error)
+  }
 }
 
 async function validatePermission(action: string) {
@@ -95,7 +121,12 @@ export async function createEmpresa(empresa: Empresa): Promise<Empresa> {
     .select()
     .single()
   if (error) throw error
-  return mapEmpresaFromDB(data)
+
+  if (empresa.temposOrcados) {
+    await saveTemposOrcados(data.id, empresa.temposOrcados)
+  }
+
+  return fetchEmpresaById(data.id)
 }
 
 export async function updateEmpresa(id: string, empresa: Empresa): Promise<Empresa> {
@@ -107,7 +138,12 @@ export async function updateEmpresa(id: string, empresa: Empresa): Promise<Empre
     .select()
     .single()
   if (error) throw error
-  return mapEmpresaFromDB(data)
+
+  if (empresa.temposOrcados) {
+    await saveTemposOrcados(id, empresa.temposOrcados)
+  }
+
+  return fetchEmpresaById(id)
 }
 
 export async function deleteEmpresa(id: string): Promise<void> {
@@ -117,6 +153,17 @@ export async function deleteEmpresa(id: string): Promise<void> {
 }
 
 function mapEmpresaFromDB(db: any): Empresa {
+  const currentYear = new Date().getFullYear()
+  const temposOrcados: Record<number, number> = {}
+
+  if (db.tempo_orcado_empresas && Array.isArray(db.tempo_orcado_empresas)) {
+    db.tempo_orcado_empresas.forEach((t: any) => {
+      if (t.ano === currentYear) {
+        temposOrcados[t.mes] = Number(t.tempo_orcado)
+      }
+    })
+  }
+
   return {
     id: db.id,
     nome: db.nome,
@@ -138,6 +185,7 @@ function mapEmpresaFromDB(db: any): Empresa {
     receitaFinanceira: db.receita_financeira || false,
     periodoVerificado: db.periodo_verificado || '',
     observacoes: db.observacoes || '',
+    temposOrcados,
   }
 }
 

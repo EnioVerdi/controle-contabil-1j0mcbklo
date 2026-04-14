@@ -42,7 +42,23 @@ const defaultEmpresa: Partial<Empresa> = {
   regimeFolha: '',
   contabilizacaoFolha: '',
   periodoVerificado: '',
+  temposOrcados: {},
 }
+
+const mesesLabel = [
+  { value: 1, label: 'Jan' },
+  { value: 2, label: 'Fev' },
+  { value: 3, label: 'Mar' },
+  { value: 4, label: 'Abr' },
+  { value: 5, label: 'Mai' },
+  { value: 6, label: 'Jun' },
+  { value: 7, label: 'Jul' },
+  { value: 8, label: 'Ago' },
+  { value: 9, label: 'Set' },
+  { value: 10, label: 'Out' },
+  { value: 11, label: 'Nov' },
+  { value: 12, label: 'Dez' },
+]
 
 export function EmpresaForm({ empresa, empresas, onSubmit, onCancel }: EmpresaFormProps) {
   const [formData, setFormData] = useState<Partial<Empresa>>(empresa || defaultEmpresa)
@@ -72,6 +88,18 @@ export function EmpresaForm({ empresa, empresas, onSubmit, onCancel }: EmpresaFo
 
   const handleChange = (field: keyof Empresa, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const handleTempoOrcadoChange = (mes: number, value: string) => {
+    setFormData((prev) => {
+      const newTempos = { ...(prev.temposOrcados || {}) }
+      if (value === '') {
+        delete newTempos[mes]
+      } else {
+        newTempos[mes] = parseFloat(value.replace(',', '.'))
+      }
+      return { ...prev, temposOrcados: newTempos }
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -263,6 +291,28 @@ export function EmpresaForm({ empresa, empresas, onSubmit, onCancel }: EmpresaFo
               Receita Financeira
             </Label>
           </div>
+        </div>
+      </div>
+
+      <div className="space-y-4 border-t pt-4">
+        <Label>Tempo Orçado (horas) - Ano {new Date().getFullYear()}</Label>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mt-2">
+          {mesesLabel.map((m) => (
+            <div key={m.value} className="space-y-1">
+              <Label htmlFor={`tempo-${m.value}`} className="text-xs">
+                {m.label}
+              </Label>
+              <Input
+                id={`tempo-${m.value}`}
+                type="number"
+                step="0.01"
+                min="0"
+                value={formData.temposOrcados?.[m.value] || ''}
+                onChange={(e) => handleTempoOrcadoChange(m.value, e.target.value)}
+                placeholder="0.00"
+              />
+            </div>
+          ))}
         </div>
       </div>
 

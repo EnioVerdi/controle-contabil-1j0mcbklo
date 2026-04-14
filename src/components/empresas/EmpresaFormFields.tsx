@@ -18,6 +18,21 @@ interface EmpresaFormFieldsProps {
   form: UseFormReturn<any>
 }
 
+const mesesLabel = [
+  { value: 1, label: 'Jan' },
+  { value: 2, label: 'Fev' },
+  { value: 3, label: 'Mar' },
+  { value: 4, label: 'Abr' },
+  { value: 5, label: 'Mai' },
+  { value: 6, label: 'Jun' },
+  { value: 7, label: 'Jul' },
+  { value: 8, label: 'Ago' },
+  { value: 9, label: 'Set' },
+  { value: 10, label: 'Out' },
+  { value: 11, label: 'Nov' },
+  { value: 12, label: 'Dez' },
+]
+
 export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
   const [users, setUsers] = useState<{ id: string; name: string }[]>([])
 
@@ -327,7 +342,41 @@ export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
       </div>
 
       <div className="space-y-4 md:col-span-2">
-        <h3 className="font-semibold text-lg border-b pb-2 text-foreground">6. Observações</h3>
+        <h3 className="font-semibold text-lg border-b pb-2 text-foreground">6. Tempo Orçado</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+          {mesesLabel.map((m) => (
+            <FormField
+              key={m.value}
+              control={form.control}
+              name={`temposOrcados.${m.value}`}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-xs">{m.label}</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value === '' ? undefined : parseFloat(e.target.value),
+                        )
+                      }
+                      value={field.value || ''}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-4 md:col-span-2">
+        <h3 className="font-semibold text-lg border-b pb-2 text-foreground">7. Observações</h3>
         <FormField
           control={form.control}
           name="observacoes"

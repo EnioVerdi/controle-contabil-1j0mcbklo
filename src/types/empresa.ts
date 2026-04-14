@@ -19,4 +19,5 @@ export interface Empresa {
   receitaFinanceira?: boolean
   periodoVerificado?: string
   observacoes?: string
+  temposOrcados?: Record<number, number>
 }
