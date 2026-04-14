@@ -47,21 +47,10 @@ export function PerformanceSummary({ chartData = [] }: { chartData?: any[] }) {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // 1. Obter o total exato de empresas cadastradas no sistema
-        const { count: totalEmpresas, error: countError } = await supabase
-          .from('empresas')
-          .select('id', { count: 'exact', head: true })
-
-        if (countError) throw countError
-
-        const total = totalEmpresas || 0
-        const currentYear = new Date().getFullYear()
-
-        // 2. Obter as tarefas/status da timeline para o ano atual
+        // 1. Obter as tarefas/status da timeline (histórico total, sem filtro de ano)
         const { data: timelineData, error: timelineError } = await supabase
           .from('empresa_timeline')
           .select('mes, status')
-          .eq('ano', currentYear)
 
         if (timelineError) throw timelineError
 
@@ -80,15 +69,14 @@ export function PerformanceSummary({ chartData = [] }: { chartData?: any[] }) {
           'Dez',
         ]
 
-        // 3. Processar os dados garantindo que todas as empresas sejam consideradas
+        // 2. Processar os dados garantindo que todas as tarefas sejam consideradas
         const processedData = months.map((monthName, index) => {
           const monthNumber = index + 1
           const monthRecords = timelineData?.filter((t) => t.mes === monthNumber) || []
 
           const concluido = monthRecords.filter((t) => t.status === 'concluido').length
           const aberto = monthRecords.filter((t) => t.status === 'aberto').length
-          // Pendentes são o total de empresas menos as que já estão em andamento ou concluídas
-          const pendente = Math.max(0, total - concluido - aberto)
+          const pendente = monthRecords.filter((t) => t.status === 'nao_iniciado').length
 
           return {
             day: monthName,

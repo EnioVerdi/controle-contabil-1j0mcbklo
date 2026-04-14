@@ -75,10 +75,9 @@ export default function Dashboard() {
     'Dez',
   ]
   const chartData = mesesStr.map((mes, index) => {
-    const monthTasks = filteredTimeline.filter((t) => t.mes === index + 1)
     const monthTasksGlobal = timeline.filter((t) => t.mes === index + 1)
-    const concluido = monthTasks.filter((t) => t.status === 'concluido').length
-    const aberto = monthTasks.filter((t) => t.status === 'aberto').length
+    const concluido = monthTasksGlobal.filter((t) => t.status === 'concluido').length
+    const aberto = monthTasksGlobal.filter((t) => t.status === 'aberto').length
     const pendente = monthTasksGlobal.filter((t) => t.status === 'nao_iniciado').length
     return {
       day: mes,
