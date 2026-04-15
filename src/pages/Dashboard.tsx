@@ -53,7 +53,6 @@ export default function Dashboard() {
   const totalEmpresas = empresas.length
   const tarefasEmAberto = filteredTimeline.filter((t) => t.status === 'aberto').length
   const tarefasConcluidas = filteredTimeline.filter((t) => t.status === 'concluido').length
-  const tarefasPendentes = filteredTimeline.filter((t) => t.status === 'nao_iniciado').length
   const totalTarefasPendentesGlobal = timeline.filter((t) => t.status === 'nao_iniciado').length
   const totalTarefasAno = filteredTimeline.length
   const taxaConclusao =
@@ -133,11 +132,14 @@ export default function Dashboard() {
   })
 
   // Breakdown Data
+  const totalTarefasAbertasGlobal = timeline.filter((t) => t.status === 'aberto').length
+  const totalTarefasConcluidasGlobal = timeline.filter((t) => t.status === 'concluido').length
+
   const breakdownStats = {
-    total: totalTarefasAno,
-    concluido: tarefasConcluidas,
-    pendente: tarefasPendentes,
-    aberto: tarefasEmAberto,
+    total: timeline.length,
+    concluido: totalTarefasConcluidasGlobal,
+    pendente: totalTarefasPendentesGlobal,
+    aberto: totalTarefasAbertasGlobal,
   }
 
   return (
