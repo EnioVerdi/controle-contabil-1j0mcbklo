@@ -15,6 +15,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  TableFooter,
 } from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
 import { Search, Loader2 } from 'lucide-react'
@@ -64,6 +65,7 @@ export default function Analytics() {
   const [prodYear, setProdYear] = useState('2026')
   const [prodUser, setProdUser] = useState('Todos')
   const [prodTimeline, setProdTimeline] = useState<any[]>([])
+  const [prodTempos, setProdTempos] = useState<any[]>([])
 
   useEffect(() => {
     localStorage.setItem('finova_year', year)
@@ -108,12 +110,19 @@ export default function Analytics() {
 
   useEffect(() => {
     async function loadProd() {
-      const { data } = await supabase
-        .from('empresa_timeline')
-        .select('empresa_id, mes, ano, status, data_conclusao')
-        .eq('ano', parseInt(prodYear))
-        .eq('status', 'concluido')
-      setProdTimeline(data || [])
+      const [{ data: timelineData }, { data: temposData }] = await Promise.all([
+        supabase
+          .from('empresa_timeline')
+          .select('empresa_id, mes, ano, status, data_conclusao')
+          .eq('ano', parseInt(prodYear))
+          .eq('status', 'concluido'),
+        supabase
+          .from('tempo_orcado_empresas')
+          .select('empresa_id, mes, ano, tempo_orcado')
+          .eq('ano', parseInt(prodYear)),
+      ])
+      setProdTimeline(timelineData || [])
+      setProdTempos(temposData || [])
     }
     loadProd()
   }, [prodYear])
@@ -189,17 +198,26 @@ export default function Analytics() {
           const d = new Date(t.data_conclusao)
           formattedDate = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`
         }
+        const tempoObj = prodTempos.find(
+          (pt) => pt.empresa_id === t.empresa_id && pt.mes === t.mes && pt.ano === t.ano,
+        )
+        const tempo_orcado = tempoObj ? Number(tempoObj.tempo_orcado) : 0
         return {
           id: t.empresa_id + '-' + t.mes,
           empresaNome: emp?.nome || 'Desconhecida',
           dataConclusao: formattedDate,
           responsavel: emp?.profiles?.name || 'Não atribuído',
           rawDate: t.data_conclusao ? new Date(t.data_conclusao).getTime() : 0,
+          tempo_orcado,
         }
       })
       .sort((a, b) => b.rawDate - a.rawDate)
     return filtered
-  }, [prodTimeline, empresas, prodUser, prodMonth])
+  }, [prodTimeline, prodTempos, empresas, prodUser, prodMonth])
+
+  const totalTempoOrcado = useMemo(() => {
+    return prodTableData.reduce((acc, curr) => acc + (curr.tempo_orcado || 0), 0)
+  }, [prodTableData])
 
   const s1 = useMemo(() => {
     const rMap = new Map<string, string>()
@@ -415,6 +433,9 @@ export default function Analytics() {
                       <TableHead className="font-semibold text-gray-600">
                         Usuário Responsável
                       </TableHead>
+                      <TableHead className="text-right font-semibold text-gray-600">
+                        Tempo Orçado (horas)
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -426,16 +447,31 @@ export default function Analytics() {
                           </TableCell>
                           <TableCell className="text-gray-600">{r.dataConclusao}</TableCell>
                           <TableCell className="text-gray-900">{r.responsavel}</TableCell>
+                          <TableCell className="text-right text-gray-900">
+                            {r.tempo_orcado.toFixed(2)}
+                          </TableCell>
                         </TableRow>
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={3} className="h-32 text-center text-gray-500">
+                        <TableCell colSpan={4} className="h-32 text-center text-gray-500">
                           Nenhuma empresa concluída para os filtros selecionados.
                         </TableCell>
                       </TableRow>
                     )}
                   </TableBody>
+                  {prodTableData.length > 0 && (
+                    <TableFooter className="bg-gray-50/50">
+                      <TableRow>
+                        <TableCell colSpan={3} className="font-semibold text-right text-gray-900">
+                          Total:
+                        </TableCell>
+                        <TableCell className="font-bold text-right text-gray-900">
+                          {totalTempoOrcado.toFixed(2)}
+                        </TableCell>
+                      </TableRow>
+                    </TableFooter>
+                  )}
                 </Table>
               </div>
             </div>
