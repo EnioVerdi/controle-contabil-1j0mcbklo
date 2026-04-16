@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase/client'
+import { syncEmpresaTimeline } from '@/services/timeline'
 
 interface EmpresaFormProps {
   empresa?: Empresa | null
@@ -120,6 +121,10 @@ export function EmpresaForm({ empresa, empresas, onSubmit, onCancel }: EmpresaFo
     try {
       setIsLoading(true)
       await onSubmit(formData as Empresa)
+
+      if (!isEditing) {
+        await syncEmpresaTimeline().catch(console.error)
+      }
     } catch (err: any) {
       setError(err.message || 'Erro ao salvar empresa.')
     } finally {

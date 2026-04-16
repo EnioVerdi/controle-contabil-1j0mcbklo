@@ -6,6 +6,7 @@ import { TopCategories } from '@/components/dashboard/TopCategories'
 import { TopUsersTable } from '@/components/dashboard/TopUsersTable'
 import { ExpenseBreakdown } from '@/components/dashboard/ExpenseBreakdown'
 import { Loader2 } from 'lucide-react'
+import { syncEmpresaTimeline } from '@/services/timeline'
 import {
   Select,
   SelectContent,
@@ -23,6 +24,8 @@ export default function Dashboard() {
   useEffect(() => {
     async function loadData() {
       try {
+        await syncEmpresaTimeline(selectedYear).catch(console.error)
+
         const [empRes, timeRes] = await Promise.all([
           supabase.from('empresas').select('*'),
           supabase.from('empresa_timeline').select('*'),
@@ -36,7 +39,7 @@ export default function Dashboard() {
       }
     }
     loadData()
-  }, [])
+  }, [selectedYear])
 
   if (loading) {
     return (

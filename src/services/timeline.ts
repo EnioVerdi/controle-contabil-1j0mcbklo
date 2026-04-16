@@ -68,6 +68,14 @@ export async function fetchResumoMensal(ano: number) {
   return data
 }
 
+export async function syncEmpresaTimeline(ano?: number) {
+  const { data, error } = await supabase.functions.invoke('sync-empresa-timeline', {
+    body: { ano: ano || new Date().getFullYear() },
+  })
+  if (error) throw error
+  return data
+}
+
 export async function upsertTimelineMonth(
   empresaId: string,
   ano: number,

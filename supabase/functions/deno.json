@@ -1,6 +1,7 @@
 {
   "_versions": {
     "check-permission": 3,
-    "manage-users": 4
+    "manage-users": 4,
+    "sync-empresa-timeline": 1
   }
 }
