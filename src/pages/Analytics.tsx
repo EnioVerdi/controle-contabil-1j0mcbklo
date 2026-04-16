@@ -52,7 +52,7 @@ const MONTHS = [
   { value: '12', label: 'Dezembro' },
 ]
 
-const PROD_YEARS = ['2024', '2025', '2026']
+const PROD_YEARS = ['2026', '2027', '2028']
 
 export default function Analytics() {
   const [empresas, setEmpresas] = useState<any[]>([])
