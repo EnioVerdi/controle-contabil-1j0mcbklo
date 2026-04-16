@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
   BarChart,
   Bar,
@@ -16,7 +16,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { supabase } from '@/lib/supabase/client'
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
@@ -42,84 +41,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export function PerformanceSummary({ chartData = [] }: { chartData?: any[] }) {
   const [period, setPeriod] = useState('Mensal')
-  const [data, setData] = useState<any[]>([])
-
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        // 1. Obter as tarefas/status da timeline (histórico total, sem filtro de ano)
-        const { data: timelineData, error: timelineError } = await supabase
-          .from('empresa_timeline')
-          .select('mes, status')
-
-        if (timelineError) throw timelineError
-
-        const months = [
-          'Jan',
-          'Fev',
-          'Mar',
-          'Abr',
-          'Mai',
-          'Jun',
-          'Jul',
-          'Ago',
-          'Set',
-          'Out',
-          'Nov',
-          'Dez',
-        ]
-
-        // 2. Processar os dados garantindo que todas as tarefas sejam consideradas
-        const processedData = months.map((monthName, index) => {
-          const monthNumber = index + 1
-          const monthRecords = timelineData?.filter((t) => t.mes === monthNumber) || []
-
-          const concluido = monthRecords.filter((t) => t.status === 'concluido').length
-          const aberto = monthRecords.filter((t) => t.status === 'aberto').length
-          const pendente = monthRecords.filter((t) => t.status === 'nao_iniciado').length
-
-          return {
-            day: monthName,
-            concluido,
-            aberto,
-            pendente,
-          }
-        })
-
-        setData(processedData)
-      } catch (error) {
-        console.error('Erro ao buscar dados de desempenho:', error)
-      }
-    }
-
-    fetchDashboardData()
-
-    // Configurar realtime para manter o gráfico sempre atualizado
-    const channel = supabase
-      .channel('timeline_changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'empresa_timeline' },
-        fetchDashboardData,
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'empresas' },
-        fetchDashboardData,
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [])
 
   const displayData =
-    data.length > 0
-      ? data
-      : chartData.length > 0
-        ? chartData
-        : [{ day: 'Jan', concluido: 0, aberto: 0, pendente: 0 }]
+    chartData.length > 0 ? chartData : [{ day: 'Jan', concluido: 0, aberto: 0, pendente: 0 }]
 
   return (
     <div className="bg-white rounded-[24px] p-6 shadow-[0_2px_20px_rgba(0,0,0,0.02)] h-full flex flex-col">

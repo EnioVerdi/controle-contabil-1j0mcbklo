@@ -16,32 +16,42 @@ import {
 } from '@/components/ui/select'
 
 export default function Dashboard() {
-  const [empresas, setEmpresas] = useState<any[]>([])
-  const [timeline, setTimeline] = useState<any[]>([])
+  const [stats, setStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear())
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        await syncEmpresaTimeline(selectedYear).catch(console.error)
-
-        const [empRes, timeRes] = await Promise.all([
-          supabase.from('empresas').select('*'),
-          supabase.from('empresa_timeline').select('*'),
-        ])
-        setEmpresas(empRes.data || [])
-        setTimeline(timeRes.data || [])
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error)
-      } finally {
-        setLoading(false)
-      }
+  const loadData = async () => {
+    try {
+      await syncEmpresaTimeline(selectedYear).catch(console.error)
+      const { data: rpcData, error } = await supabase.rpc('get_dashboard_stats' as any, {
+        p_ano: selectedYear,
+      })
+      if (error) throw error
+      setStats(rpcData)
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error)
+    } finally {
+      setLoading(false)
     }
+  }
+
+  useEffect(() => {
     loadData()
+
+    const channel = supabase
+      .channel('dashboard_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'empresa_timeline' }, () =>
+        loadData(),
+      )
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'empresas' }, () => loadData())
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [selectedYear])
 
-  if (loading) {
+  if (loading || !stats) {
     return (
       <div className="flex h-[400px] w-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -49,101 +59,30 @@ export default function Dashboard() {
     )
   }
 
-  // Filter timeline by the selected year
-  const filteredTimeline = timeline.filter((t) => t.ano === selectedYear)
-
   // KPIs
-  const totalEmpresas = empresas.length
-  const tarefasEmAberto = filteredTimeline.filter((t) => t.status === 'aberto').length
-  const tarefasConcluidas = filteredTimeline.filter((t) => t.status === 'concluido').length
-  const tarefasPendentes = timeline.filter((t) => t.status === 'nao_iniciado').length
-  const totalTarefasAno = filteredTimeline.length
+  const totalEmpresas = stats.totalEmpresas || 0
+  const tarefasEmAberto = stats.tarefasAnoAberto || 0
+  const tarefasConcluidas = stats.tarefasAnoConcluido || 0
+  const totalTarefasPendentesGlobal = stats.tarefasGlobalPendente || 0
+  const totalTarefasAno = stats.tarefasAnoTotal || 0
   const taxaConclusao =
     totalTarefasAno > 0 ? Math.round((tarefasConcluidas / totalTarefasAno) * 100) : 0
 
   // Chart Data (grouped by month 1-12)
-  const mesesStr = [
-    'Jan',
-    'Fev',
-    'Mar',
-    'Abr',
-    'Mai',
-    'Jun',
-    'Jul',
-    'Ago',
-    'Set',
-    'Out',
-    'Nov',
-    'Dez',
-  ]
-  const chartData = mesesStr.map((mes, index) => {
-    const monthTasksGlobal = timeline.filter((t) => t.mes === index + 1)
-    const concluido = monthTasksGlobal.filter((t) => t.status === 'concluido').length
-    const aberto = monthTasksGlobal.filter((t) => t.status === 'aberto').length
-    const pendente = monthTasksGlobal.filter((t) => t.status === 'nao_iniciado').length
-    return {
-      day: mes,
-      concluido,
-      aberto,
-      pendente,
-      total: concluido + aberto + pendente,
-    }
-  })
+  const chartData = stats.chartData || []
 
   // Categories (by regime_tributario)
-  const targetRegimes = [
-    'Lucro Real Mensal',
-    'Lucro Real Trimestral',
-    'Lucro Presumido',
-    'Simples Nacional',
-    'Simples Nacional Hibrido',
-  ]
-
-  const categoriesData = targetRegimes
-    .map((regime) => {
-      const value = empresas.filter((emp) => {
-        const rt = emp.regime_tributario || ''
-        if (regime === 'Simples Nacional Hibrido') {
-          return rt === 'Simples Nacional Hibrido' || rt === 'Simples Nacional Híbrido'
-        }
-        return rt === regime
-      }).length
-
-      return {
-        name: regime === 'Simples Nacional Hibrido' ? 'Simples Nacional Híbrido' : regime,
-        value,
-        percent: totalEmpresas > 0 ? Math.round((value / totalEmpresas) * 100) : 0,
-      }
-    })
-    .sort((a, b) => b.value - a.value)
+  const categoriesData = stats.categoriesData || []
 
   // Top Empresas
-  const topEmpresasData = empresas.map((emp) => {
-    const empTasks = filteredTimeline.filter((t) => t.empresa_id === emp.id)
-    const concluido = empTasks.filter((t) => t.status === 'concluido').length
-    const aberto = empTasks.filter((t) => t.status === 'aberto').length
-    const pendente = empTasks.filter((t) => t.status === 'nao_iniciado').length
-    const total = empTasks.length
-    return {
-      id: emp.id,
-      nome: emp.nome,
-      concluidas: concluido,
-      aberto,
-      pendentes: pendente,
-      progresso: total > 0 ? Math.round((concluido / total) * 100) : 0,
-    }
-  })
+  const topEmpresasData = stats.topEmpresasData || []
 
   // Breakdown Data
-  const totalTarefasAbertasGlobal = timeline.filter((t) => t.status === 'aberto').length
-  const totalTarefasConcluidasGlobal = timeline.filter((t) => t.status === 'concluido').length
-  const totalTarefasPendentesGlobal = timeline.filter((t) => t.status === 'nao_iniciado').length
-
   const breakdownStats = {
-    total: timeline.length,
-    concluido: totalTarefasConcluidasGlobal,
-    pendente: totalTarefasPendentesGlobal,
-    aberto: totalTarefasAbertasGlobal,
+    total: stats.tarefasGlobalTotal || 0,
+    concluido: stats.tarefasGlobalConcluido || 0,
+    pendente: stats.tarefasGlobalPendente || 0,
+    aberto: stats.tarefasGlobalAberto || 0,
   }
 
   return (
@@ -196,7 +135,9 @@ export default function Dashboard() {
           value={totalTarefasPendentesGlobal}
           trend={-2}
           progress={
-            timeline.length ? Math.round((totalTarefasPendentesGlobal / timeline.length) * 100) : 0
+            stats.tarefasGlobalTotal > 0
+              ? Math.round((totalTarefasPendentesGlobal / stats.tarefasGlobalTotal) * 100)
+              : 0
           }
           colorClass="bg-yellow-100"
           progressColorClass="bg-yellow-400"
