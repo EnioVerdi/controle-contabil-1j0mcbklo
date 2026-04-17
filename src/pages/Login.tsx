@@ -4,8 +4,8 @@ import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Building2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import logoVerdi from '@/assets/image-c1f91.png'
 
 export default function Login() {
   const [loading, setLoading] = useState(false)
@@ -31,14 +31,9 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
-        <div className="flex flex-col items-center mb-6">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg shadow-blue-600/20">
-            <Building2 className="w-6 h-6 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900">Finova</h1>
-          <p className="text-slate-500 mt-2 text-sm text-center">
-            Gerenciamento Contábil Inteligente
-          </p>
+        <div className="flex flex-col items-center mb-8">
+          <img src={logoVerdi} alt="Verdi Oelke" className="h-20 w-auto object-contain mb-4" />
+          <p className="text-slate-500 text-sm text-center">Gerenciamento Contábil Inteligente</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4 mt-8">
