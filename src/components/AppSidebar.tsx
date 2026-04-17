@@ -66,7 +66,7 @@ export function AppSidebar() {
           <img
             src={logoVerdi}
             alt="Verdi Oelke"
-            className="h-12 w-auto object-contain text-[0.1rem]"
+            className="h-12 w-auto object-contain text-[0.1rem] opacity-[0.48]"
           />
         </div>
       </SidebarHeader>
