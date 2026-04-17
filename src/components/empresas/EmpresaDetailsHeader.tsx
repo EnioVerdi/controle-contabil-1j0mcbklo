@@ -65,26 +65,4 @@ export function EmpresaDetailsHeader({ empresa, onEdit, onDelete }: Props) {
                 {isVerified ? (
                   <>
                     <ShieldCheck className="w-3 h-3 mr-1" /> Verificada
-                  </>
-                ) : (
-                  <>
-                    <AlertCircle className="w-3 h-3 mr-1" /> Pendente
-                  </>
-                )}
-              </Badge>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
-        <Button variant="outline" className="flex-1 md:flex-none" onClick={onEdit}>
-          <Pencil className="w-4 h-4 mr-2" /> Editar
-        </Button>
-        <Button variant="destructive" className="flex-1 md:flex-none" onClick={onDelete}>
-          <Trash2 className="w-4 h-4 mr-2" /> Excluir
-        </Button>
-      </div>
-    </div>
-  )
-}
+         
