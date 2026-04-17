@@ -63,7 +63,11 @@ export function AppSidebar() {
     <Sidebar className="border-r-0 bg-white">
       <SidebarHeader className="p-8 pb-4">
         <div className="flex items-center justify-center px-2">
-          <img src={logoVerdi} alt="Verdi Oelke" className="h-12 w-auto object-contain" />
+          <img
+            src={logoVerdi}
+            alt="Verdi Oelke"
+            className="h-12 w-auto object-contain text-[0.1rem]"
+          />
         </div>
       </SidebarHeader>
 
