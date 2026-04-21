@@ -48,12 +48,14 @@ export function AppSidebar() {
     if (role === 'admin') return true
     if (item.path === '/configuracoes') return false
 
-    const defaultTabs = ['/dashboard', '/timeline', '/analytics', '/']
-    if (defaultTabs.includes(item.path)) return true
-
-    if (role === 'contador' || role === 'consultor') {
-      return defaultTabs.includes(item.path)
+    if (role === 'gerente') {
+      return item.path === '/dashboard' || item.path === '/analytics'
     }
+
+    if (role === 'contador' || role === 'consultor' || role === 'user') {
+      return item.path === '/' || item.path === '/timeline'
+    }
+
     return false
   })
 

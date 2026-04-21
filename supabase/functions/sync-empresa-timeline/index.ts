@@ -4,7 +4,8 @@ import { createClient } from 'jsr:@supabase/supabase-js@2'
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, x-supabase-client-platform, apikey, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, x-supabase-client-platform, apikey, content-type',
 }
 
 Deno.serve(async (req: Request) => {
@@ -24,7 +25,10 @@ Deno.serve(async (req: Request) => {
     const userClient = createClient(supabaseUrl, supabaseKey, {
       global: { headers: { Authorization: authHeader } },
     })
-    const { data: { user }, error: userError } = await userClient.auth.getUser()
+    const {
+      data: { user },
+      error: userError,
+    } = await userClient.auth.getUser()
     if (userError || !user) throw new Error('Not authenticated')
 
     const body = await req.json().catch(() => ({}))
@@ -49,19 +53,19 @@ Deno.serve(async (req: Request) => {
           empresa_id: empresa.id,
           ano,
           mes,
-          status: 'nao_iniciado'
+          status: 'nao_iniciado',
         })
       }
     }
 
     // Batch insert in chunks of 1000 to avoid limits
-    const chunkSize = 1000;
+    const chunkSize = 1000
     for (let i = 0; i < timelineInserts.length; i += chunkSize) {
-      const chunk = timelineInserts.slice(i, i + chunkSize);
+      const chunk = timelineInserts.slice(i, i + chunkSize)
       const { error: insertError } = await adminClient
         .from('empresa_timeline')
         .upsert(chunk, { onConflict: 'empresa_id,ano,mes', ignoreDuplicates: true })
-      
+
       if (insertError) throw insertError
     }
 
