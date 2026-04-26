@@ -1,6 +1,7 @@
 export interface Empresa {
   id: string
   nome: string
+  cnpj?: string
   logo?: string
   responsavel?: string
   responsavel_id?: string | null

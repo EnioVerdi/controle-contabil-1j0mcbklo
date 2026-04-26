@@ -22,9 +22,12 @@ interface EmpresaFormProps {
   onCancel: () => void
 }
 
+import { formatCNPJ, isValidCNPJ } from '@/lib/utils'
+
 const defaultEmpresa: Partial<Empresa> = {
   id: '',
   nome: '',
+  cnpj: '',
   responsavel_id: null,
   responsavel: '',
   atividade: '',
@@ -88,6 +91,9 @@ export function EmpresaForm({ empresa, empresas, onSubmit, onCancel }: EmpresaFo
   }, [empresa])
 
   const handleChange = (field: keyof Empresa, value: any) => {
+    if (field === 'cnpj') {
+      value = formatCNPJ(value)
+    }
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -107,8 +113,21 @@ export function EmpresaForm({ empresa, empresas, onSubmit, onCancel }: EmpresaFo
     e.preventDefault()
     setError(null)
 
-    if (!formData.id || !formData.nome || !formData.responsavel_id || !formData.atividade) {
-      setError('Preencha todos os campos obrigatórios (Código, Nome, Responsável, Atividade).')
+    if (
+      !formData.id ||
+      !formData.nome ||
+      !formData.cnpj ||
+      !formData.responsavel_id ||
+      !formData.atividade
+    ) {
+      setError(
+        'Preencha todos os campos obrigatórios (Código, Nome, CNPJ, Responsável, Atividade).',
+      )
+      return
+    }
+
+    if (formData.cnpj && !isValidCNPJ(formData.cnpj)) {
+      setError('CNPJ inválido. Verifique se digitou corretamente (14 dígitos).')
       return
     }
 
@@ -158,6 +177,18 @@ export function EmpresaForm({ empresa, empresas, onSubmit, onCancel }: EmpresaFo
             value={formData.nome}
             onChange={(e) => handleChange('nome', e.target.value)}
             placeholder="Razão Social"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="cnpj">
+            CNPJ <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="cnpj"
+            value={formData.cnpj}
+            onChange={(e) => handleChange('cnpj', e.target.value)}
+            placeholder="00.000.000/0000-00"
+            maxLength={18}
           />
         </div>
         <div className="space-y-2">

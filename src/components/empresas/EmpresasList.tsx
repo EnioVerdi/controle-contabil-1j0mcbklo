@@ -61,6 +61,7 @@ export function EmpresasList({ data, onSort, onView, onEdit, onDelete }: Empresa
               {[
                 { key: 'id', label: 'Código' },
                 { key: 'nome', label: 'Nome da Empresa' },
+                { key: 'cnpj', label: 'CNPJ' },
                 { key: 'responsavel', label: 'Responsável' },
                 { key: 'atividade', label: 'Atividade' },
                 { key: 'fechamento', label: 'Fechamento' },
@@ -122,6 +123,7 @@ export function EmpresasList({ data, onSort, onView, onEdit, onDelete }: Empresa
                       <span className="font-semibold text-foreground">{empresa.nome}</span>
                     </div>
                   </TableCell>
+                  <TableCell className="whitespace-nowrap">{empresa.cnpj || '-'}</TableCell>
                   <TableCell>{empresa.responsavel}</TableCell>
                   <TableCell>{empresa.atividade}</TableCell>
                   <TableCell>{empresa.fechamento}</TableCell>

@@ -91,6 +91,7 @@ export async function importEmpresas(
   const mappedEmpresas = empresas.map((e) => ({
     id: e.id,
     nome: e.nome,
+    cnpj: e.cnpj || null,
     atividade: e.atividade || 'Não informada',
     regime_tributario: e.regimeTributario || null,
     fechamento: e.fechamento || null,
@@ -167,6 +168,7 @@ function mapEmpresaFromDB(db: any): Empresa {
   return {
     id: db.id,
     nome: db.nome,
+    cnpj: db.cnpj || '',
     logo: db.logo || '',
     responsavel: db.profiles?.name || 'Não informado',
     responsavel_id: db.responsavel,
@@ -193,6 +195,7 @@ function mapEmpresaToDB(empresa: Empresa): any {
   return {
     id: empresa.id,
     nome: empresa.nome,
+    cnpj: empresa.cnpj,
     logo: empresa.logo,
     responsavel: empresa.responsavel_id || null,
     atividade: empresa.atividade,

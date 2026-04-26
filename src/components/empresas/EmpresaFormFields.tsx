@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase/client'
+import { formatCNPJ } from '@/lib/utils'
 
 interface EmpresaFormFieldsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,6 +75,25 @@ export function EmpresaFormFields({ form }: EmpresaFormFieldsProps) {
                 <FormLabel>Nome</FormLabel>
                 <FormControl>
                   <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="cnpj"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>CNPJ</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    value={field.value || ''}
+                    onChange={(e) => field.onChange(formatCNPJ(e.target.value))}
+                    placeholder="00.000.000/0000-00"
+                    maxLength={18}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
